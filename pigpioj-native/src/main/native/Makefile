@@ -17,7 +17,7 @@ LIBS         =  -lpigpio -lrt
 # Should not alter anything below this line
 ###############################################################################
 
-SRC	=   org_diozero_internal_provider_pigpio_impl_PigpioGpio.c
+SRC	=   com_diozero_pigpioj_PigpioGpio.c
 
 OBJ =	$(SRC:.c=.o)
 
