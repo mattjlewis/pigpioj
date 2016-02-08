@@ -1,17 +1,23 @@
 #include "com_diozero_pigpioj_PigpioGpio.h"
+#include "pigpioj_util.h"
 #include <time.h>
-
-/* Java VM interface */
-static JavaVM* globalJavaVM = NULL;
 
 #define MAX_GPIO_PINS 50
 
 jobject listeners[MAX_GPIO_PINS];
 
+void setISRFunc(JNIEnv* env, jclass clz, unsigned gpio, unsigned edge, int timeout, gpioISRFunc_t f) {
+	int rc = gpioSetISRFunc(gpio, edge, timeout, f);
+	if (rc < 0) {
+		throwIOException(env, "Error calling gpioSetISRFunc");
+	}
+}
+
 void callbackFunction(int gpio, int level, uint32_t tick) {
 	// Attach to the current JVM thread
+	JavaVM* vm = getGlobalJavaVM();
 	JNIEnv* env;
-	(*globalJavaVM)->AttachCurrentThread(globalJavaVM, (void**)&env, NULL);
+	(*vm)->AttachCurrentThread(vm, (void**)&env, NULL);
 
 	// Get the Java nano time as early as possible
 	// TODO Can these class/method references be cached on start-up?
@@ -57,41 +63,7 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	}
 
 	// Detach from the current JVM thread
-	(*globalJavaVM)->DetachCurrentThread(globalJavaVM);
-}
-
-void setISRFunc(JNIEnv* env, jclass clz, unsigned gpio, unsigned edge, int timeout, gpioISRFunc_t f) {
-	int rc = gpioSetISRFunc(gpio, edge, timeout, f);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetISRFunc");
-	}
-}
-
-void throwException(JNIEnv* env, const char* exception, const char* message /*= NULL*/) {
-	jclass clazz = (*env)->FindClass(env, exception);
-	if (clazz != NULL) {
-		(*env)->ThrowNew(env, clazz, message);
-		(*env)->DeleteLocalRef(env, clazz);
-	}
-}
-
-void throwIOException(JNIEnv* env, const char* message /*= NULL*/) {
-	throwException(env, "java/io/IOException", message);
-}
-
-/* The VM calls this function upon loading the native library. */
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* jvm, void* reserved) {
-	printf("JNI_OnLoad()\n");
-	globalJavaVM = jvm;
-
-	return JNI_VERSION_1_2;
-}
-
-/* This function is called when the native library gets unloaded by the VM. */
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* jvm, void* reserved) {
-	printf("JNI_OnUnLoad()\n");
-	gpioTerminate();
-	globalJavaVM = NULL;
+	(*vm)->DetachCurrentThread(vm);
 }
 
 /*

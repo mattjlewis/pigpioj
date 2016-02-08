@@ -1,0 +1,259 @@
+#include "com_diozero_pigpioj_PigpioI2C.h"
+#include "pigpioj_util.h"
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cOpen
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cOpen
+  (JNIEnv* env, jclass clz, jint i2cBus, jint i2cAddr, jint i2cFlags) {
+	int handle = i2cOpen(i2cBus, i2cAddr, i2cFlags);
+	if (handle < 0) {
+		throwIOException(env, "Error opening I2C bus");
+		return 0;
+	}
+	return handle;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cClose
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cClose
+  (JNIEnv* env, jclass clz, jint handle) {
+	int rc = i2cClose(handle);
+	if (rc < 0) {
+		throwIOException(env, "Error closing I2C handle");
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadByte
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadByte
+  (JNIEnv* env, jclass clz, jint handle) {
+	int b = i2cReadByte(handle);
+	if (b < 0) {
+		throwIOException(env, "Error invoking i2cReadByte()");
+		return 0;
+	}
+	return b;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteByte
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByte
+  (JNIEnv* env, jclass clz, jint handle, jint bVal) {
+	int rc = i2cWriteByte(handle, bVal);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteByte()");
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadByteData
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadByteData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg) {
+	int b = i2cReadByteData(handle, i2cReg);
+	if (b < 0) {
+		throwIOException(env, "Error invoking i2cReadByteData()");
+		return 0;
+	}
+	return b;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteByteData
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByteData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jint bVal) {
+	int rc = i2cWriteByteData(handle, i2cReg, bVal);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteByteData()");
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadWordData
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadWordData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg) {
+	int w = i2cReadWordData(handle, i2cReg);
+	if (w < 0) {
+		throwIOException(env, "Error invoking i2cReadWordData()");
+		return 0;
+	}
+	return w;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteWordData
+ * Signature: (III)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteWordData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jint wVal) {
+	int rc = i2cWriteWordData(handle, i2cReg, wVal);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteWordData()");
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cProcessCall
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cProcessCall
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jint wVal) {
+	int w = i2cProcessCall(handle, i2cReg, wVal);
+	if (w < 0) {
+		throwIOException(env, "Error invoking i2cProcessCall()");
+		return 0;
+	}
+	return w;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadBlockData
+ * Signature: (II[B)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadBlockData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jbyteArray buf) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int bytes_read = i2cReadBlockData(handle, i2cReg, (char*)b);
+	if (bytes_read < 0) {
+		throwIOException(env, "Error invoking i2cReadBlockData()");
+		return 0;
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+	return bytes_read;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteBlockData
+ * Signature: (II[BI)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteBlockData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int rc = i2cWriteBlockData(handle, i2cReg, (char*)b, count);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteBlockData()");
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadI2CBlockData
+ * Signature: (II[BI)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadI2CBlockData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int bytes_read = i2cReadI2CBlockData(handle, i2cReg, (char*)b, count);
+	if (bytes_read < 0) {
+		throwIOException(env, "Error invoking i2cReadI2CBlockData()");
+		return 0;
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+	return bytes_read;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteI2CBlockData
+ * Signature: (II[BI)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteI2CBlockData
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int rc = i2cWriteI2CBlockData(handle, i2cReg, (char*)b, count);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteI2CBlockData()");
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cReadDevice
+ * Signature: (I[BI)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadDevice
+  (JNIEnv* env, jclass clz, jint handle, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int bytes_read = i2cReadDevice(handle, (char*)b, count);
+	if (bytes_read < 0) {
+		throwIOException(env, "Error invoking i2cReadDevice()");
+		return 0;
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+	return bytes_read;
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cWriteDevice
+ * Signature: (I[BI)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteDevice
+  (JNIEnv* env, jclass clz, jint handle, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int rc = i2cWriteDevice(handle, (char*)b, count);
+	if (rc < 0) {
+		throwIOException(env, "Error invoking i2cWriteDevice()");
+	}
+	if (is_copy) {
+		jint mode = 0;
+		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	}
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioI2C
+ * Method:    i2cSwitchCombined
+ * Signature: (Z)V
+ */
+JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cSwitchCombined
+  (JNIEnv* env, jclass clz, jboolean setting) {
+	i2cSwitchCombined(setting);
+}

@@ -17,7 +17,7 @@ LIBS         =  -lpigpio -lrt
 # Should not alter anything below this line
 ###############################################################################
 
-SRC	=   com_diozero_pigpioj_PigpioGpio.c
+SRC	=   pigpioj_util.c com_diozero_pigpioj_PigpioGpio.c com_diozero_pigpioj_PigpioI2C.c com_diozero_pigpioj_PigpioSPI.c
 
 OBJ =	$(SRC:.c=.o)
 
