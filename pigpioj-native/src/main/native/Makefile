@@ -2,7 +2,7 @@
 #	libpigpioprovider - Java (JNI) library wrapper for pigpio for the Raspberry Pi
 #
 
-TARGET=libpigpioprovider.so
+TARGET=libpigpioj.so
 
 CC	         = gcc
 INCLUDE	     = -I. \

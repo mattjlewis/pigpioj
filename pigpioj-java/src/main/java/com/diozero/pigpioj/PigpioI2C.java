@@ -30,6 +30,10 @@ package com.diozero.pigpioj;
 import java.io.IOException;
 
 public class PigpioI2C {
+	static {
+		PigpioJ.init();
+	}
+	
 	/** This returns a handle for the device at the address on the I2C bus
 	 * For the SMBus commands the low level transactions are shown at the end of the function description.
 	 * The following abbreviations are used.

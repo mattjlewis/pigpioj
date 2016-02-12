@@ -3,6 +3,10 @@ package com.diozero.pigpioj;
 import java.io.IOException;
 
 public class PigpioSPI {
+	static {
+		PigpioJ.init();
+	}
+	
 	/**
 	 * This function returns a handle for the SPI device on the channel. Data will be
 	 * transferred at baud bits per second. The flags may be used to modify the default

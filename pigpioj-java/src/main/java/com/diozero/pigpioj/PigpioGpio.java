@@ -33,6 +33,10 @@ import java.io.IOException;
  * pigpio JNI wrapper, inspiration from this project: https://github.com/nkolban/jpigpio
  */
 public class PigpioGpio {
+	static {
+		PigpioJ.init();
+	}
+	
 	public static final int MODE_PI_INPUT = 0;
 	public static final int MODE_PI_OUTPUT = 1;
 	
@@ -44,10 +48,6 @@ public class PigpioGpio {
 	public static final int PI_PUD_OFF = 0;
 	public static final int PI_PUD_DOWN = 1;
 	public static final int PI_PUD_UP = 2;
-
-	static {
-		System.loadLibrary("pigpioprovider");
-	}
 	
 	/** Initialises the library, call before using the other library functions.
 	 * Returns the pigpio version number if OK */
