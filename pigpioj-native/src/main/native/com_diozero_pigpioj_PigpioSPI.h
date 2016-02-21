@@ -18,9 +18,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiOpen
 /*
  * Class:     com_diozero_pigpioj_PigpioSPI
  * Method:    spiClose
- * Signature: (I)V
+ * Signature: (I)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiClose
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiClose
   (JNIEnv *, jclass, jint);
 
 /*

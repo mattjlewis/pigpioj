@@ -6,13 +6,6 @@
 
 jobject listeners[MAX_GPIO_PINS];
 
-void setISRFunc(JNIEnv* env, jclass clz, unsigned gpio, unsigned edge, int timeout, gpioISRFunc_t f) {
-	int rc = gpioSetISRFunc(gpio, edge, timeout, f);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetISRFunc");
-	}
-}
-
 void callbackFunction(int gpio, int level, uint32_t tick) {
 	// Attach to the current JVM thread
 	JavaVM* vm = getGlobalJavaVM();
@@ -35,6 +28,8 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		printf("PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);
+		// Detach from the current JVM thread
+		(*vm)->DetachCurrentThread(vm);
 		return;
 	}
 
@@ -42,6 +37,8 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	jobject listener = listeners[gpio];
 	if (listener == NULL) {
 		printf("PigpioGpio Native: Error: JNI callbackFunction no listener object found [gpio=%d]\n", gpio);
+		// Detach from the current JVM thread
+		(*vm)->DetachCurrentThread(vm);
 		return;
 	}
 
@@ -78,13 +75,7 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_initialise
 		listeners[i] = NULL;
 	}
 
-	int version = gpioInitialise();
-	if (version < 0) {
-		throwIOException(env, "Error calling gpioInitialise");
-		return 0;
-	}
-
-	return version;
+	return gpioInitialise();
 }
 
 /*
@@ -100,14 +91,11 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_terminate
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setMode
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
   (JNIEnv* env, jclass clz, jint gpio, jint mode) {
-	int rc = gpioSetMode(gpio, mode);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetMode");
-	}
+	return gpioSetMode(gpio, mode);
 }
 
 /*
@@ -117,66 +105,47 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getMode
   (JNIEnv* env, jclass clz, jint gpio) {
-	int mode = gpioGetMode(gpio);
-	if (mode < 0) {
-		throwIOException(env, "Error calling gpioGetMode");
-		return 0;
-	}
-	return mode;
+	return gpioGetMode(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPullUpDown
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPullUpDown
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPullUpDown
   (JNIEnv* env, jclass clz, jint gpio, jint pud) {
-	int rc = gpioSetPullUpDown(gpio, pud);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetPullUpDown");
-	}
+	return gpioSetPullUpDown(gpio, pud);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    read
- * Signature: (I)Z
+ * Signature: (I)I
  */
-JNIEXPORT jboolean JNICALL Java_com_diozero_pigpioj_PigpioGpio_read
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_read
   (JNIEnv* env, jclass clz, jint gpio) {
-	int value = gpioRead(gpio);
-	if (value < 0) {
-		throwIOException(env, "Error calling gpioRead");
-		return 0;
-	}
-	return value;
+	return gpioRead(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    write
- * Signature: (IZ)V
+ * Signature: (IZ)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_write
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_write
   (JNIEnv* env, jclass clz, jint gpio, jboolean value) {
-	int rc = gpioWrite(gpio, value);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioWrite");
-	}
+	return gpioWrite(gpio, value);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMDutyCycle
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
   (JNIEnv* env, jclass clz, jint gpio, jint dutyCycle) {
-	int rc = gpioPWM(gpio, dutyCycle);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioPWM");
-	}
+	return gpioPWM(gpio, dutyCycle);
 }
 
 /*
@@ -186,25 +155,17 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMDutyCycle
   (JNIEnv* env, jclass clz, jint gpio) {
-	int duty_cycle = gpioGetPWMdutycycle(gpio);
-	if (duty_cycle < 0) {
-		throwIOException(env, "Error calling gpioGetPWMdutycycle");
-		return 0;
-	}
-	return duty_cycle;
+	return gpioGetPWMdutycycle(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMRange
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
   (JNIEnv* env, jclass clz, jint gpio, jint range) {
-	int rc = gpioSetPWMrange(gpio, range);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetPWMrange");
-	}
+	return gpioSetPWMrange(gpio, range);
 }
 
 /*
@@ -214,12 +175,7 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRange
   (JNIEnv* env, jclass clz, jint gpio) {
-	int range = gpioGetPWMrange(gpio);
-	if (range < 0) {
-		throwIOException(env, "Error calling gpioGetPWMrange");
-		return 0;
-	}
-	return range;
+	return gpioGetPWMrange(gpio);
 }
 
 /*
@@ -229,25 +185,17 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRange
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRealRange
   (JNIEnv* env, jclass clz, jint gpio) {
-	int range = gpioGetPWMrealRange(gpio);
-	if (range < 0) {
-		throwIOException(env, "Error calling gpioGetPWMrealRange");
-		return 0;
-	}
-	return range;
+	return gpioGetPWMrealRange(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMFrequency
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
   (JNIEnv* env, jclass clz, jint gpio, jint frequency) {
-	int rc = gpioSetPWMfrequency(gpio, frequency);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioSetPWMfrequency");
-	}
+	return gpioSetPWMfrequency(gpio, frequency);
 }
 
 /*
@@ -257,25 +205,17 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMFrequency
   (JNIEnv* env, jclass clz, jint gpio) {
-	int frequency = gpioGetPWMfrequency(gpio);
-	if (frequency < 0) {
-		throwIOException(env, "Error calling gpioGetPWMfrequency");
-		return 0;
-	}
-	return frequency;
+	return gpioGetPWMfrequency(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setServoPulseWidth
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
   (JNIEnv* env, jclass clz, jint gpio, jint pulseWidth) {
-	int rc = gpioServo(gpio, pulseWidth);
-	if (rc < 0) {
-		throwIOException(env, "Error calling gpioServo");
-	}
+	return gpioServo(gpio, pulseWidth);
 }
 
 /*
@@ -285,63 +225,52 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getServoPulseWidth
   (JNIEnv* env, jclass clz, jint gpio) {
-	int pulsewidth = gpioGetServoPulsewidth(gpio);
-	if (pulsewidth < 0) {
-		throwIOException(env, "Error calling gpioGetServoPulsewidth");
-		return 0;
-	}
-	return pulsewidth;
+	return gpioGetServoPulsewidth(gpio);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setISRFunc
- * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)V
+ * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setISRFunc
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setISRFunc
   (JNIEnv* env, jclass clz, jint gpio, jint edge, jint timeout, jobject listener) {
-	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
-		printf("PigpioGpio Native: Error: setISRFunc(%d) pin number must be 0..%d\n", gpio, MAX_GPIO_PINS-1);
-		throwIOException(env, "Error in setISRFunc, invalid pin number");
-		return;
-	}
-
 	if (listener == NULL) {
-		setISRFunc(env, clz, gpio, edge, timeout, NULL);
+		gpioSetISRFunc(gpio, edge, timeout, NULL);
 		if (listeners[gpio] != NULL) {
 			(*env)->DeleteGlobalRef(env, listeners[gpio]);
 			listeners[gpio] = NULL;
 		}
 
-		return;
+		return 0;
 	}
 
 	// Validate the listener object has the appropriate method signature
 	jclass listener_class = (*env)->GetObjectClass(env, listener);
 	if (listener_class == NULL) {
 		printf("PigpioGpio Native: Error: setISRFunc(%d) could not get listener class\n", gpio);
-		throwIOException(env, "Error in setISRFunc, could not get listener class");
-		return;
+		throwRuntimeException(env, "Error in setISRFunc, could not get class for listener object");
+		return -1;
 	}
 
 	// Verify that the object has a 'void callback(int, boolean, long, long)' method
 	jmethodID callback_method = (*env)->GetMethodID(env, listener_class, "callback", "(IZJJ)V");
 	if (callback_method == NULL) {
 		printf("PigpioGpio Native: Error: setISRFunc(%d) could not get callback method id\n", gpio);
-		throwIOException(env, "Error in setISRFunc, could not get callback method id");
-		return;
+		throwIllegalArgumentException(env, "Error in setISRFunc, could not get listener method id callback(IZJJ)V");
+		return -1;
 	}
 
 	// Remove the previous listener if there was one
 	if (listeners[gpio] != NULL) {
-		setISRFunc(env, clz, gpio, edge, timeout, NULL);
+		gpioSetISRFunc(gpio, edge, timeout, NULL);
 		(*env)->DeleteGlobalRef(env, listeners[gpio]);
 		listeners[gpio] = NULL;
 	}
 
 	// Register the new listener and pigpio callback
 	listeners[gpio] = (*env)->NewGlobalRef(env, listener);
-	setISRFunc(env, clz, gpio, edge, timeout, callbackFunction);
+	return gpioSetISRFunc(gpio, edge, timeout, callbackFunction);
 }
 
 /*

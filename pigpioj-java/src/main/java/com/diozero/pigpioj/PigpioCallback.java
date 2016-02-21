@@ -26,7 +26,7 @@ package com.diozero.pigpioj;
  * #L%
  */
 
-
+@FunctionalInterface
 public interface PigpioCallback {
 	void callback(int pin, boolean value, long epochTime, long nanoTime);
 }

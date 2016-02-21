@@ -1,4 +1,4 @@
-package com.diozero.pigpioj;
+package com.diozero.pigpioj.test;
 
 /*
  * #%L
@@ -29,6 +29,9 @@ package com.diozero.pigpioj;
 
 import java.io.IOException;
 
+import com.diozero.pigpioj.PigpioCallback;
+import com.diozero.pigpioj.PigpioGpio;
+
 public class PigpioInputTest implements PigpioCallback {
 	public static final int RISING_EDGE = 0;
 	public static final int FALLING_EDGE = 1;
@@ -45,18 +48,33 @@ public class PigpioInputTest implements PigpioCallback {
 		try {
 			int version = PigpioGpio.initialise();
 			System.out.println("version: " + version);
+			if (version < 0) {
+				throw new IOException("Error in PigpioGpio.initialise()");
+			}
 			
-			PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_INPUT);
-			PigpioGpio.setPullUpDown(pin, PI_PUD_UP);
-			PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, new PigpioInputTest());
+			int rc = PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_INPUT);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setMode()");
+			}
+			rc = PigpioGpio.setPullUpDown(pin, PI_PUD_UP);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPullUpDown()");
+			}
+			rc = PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, new PigpioInputTest());
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setISRFunc()");
+			}
 			System.out.println("Sleeping for " + delay_s + "s");
 			Thread.sleep(delay_s*1000);
 			
-			PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, null);
-		} catch (IOException e) {
+			rc = PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, null);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setISRFunc()");
+			}
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {

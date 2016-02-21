@@ -18,9 +18,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cOpen
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cClose
- * Signature: (I)V
+ * Signature: (I)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cClose
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cClose
   (JNIEnv *, jclass, jint);
 
 /*
@@ -34,9 +34,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadByte
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteByte
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByte
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByte
   (JNIEnv *, jclass, jint, jint);
 
 /*
@@ -50,9 +50,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadByteData
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteByteData
- * Signature: (III)V
+ * Signature: (III)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByteData
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteByteData
   (JNIEnv *, jclass, jint, jint, jint);
 
 /*
@@ -66,9 +66,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadWordData
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteWordData
- * Signature: (III)V
+ * Signature: (III)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteWordData
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteWordData
   (JNIEnv *, jclass, jint, jint, jint);
 
 /*
@@ -90,9 +90,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadBlockData
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteBlockData
- * Signature: (II[BI)V
+ * Signature: (II[BI)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteBlockData
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteBlockData
   (JNIEnv *, jclass, jint, jint, jbyteArray, jint);
 
 /*
@@ -106,9 +106,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadI2CBlockData
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteI2CBlockData
- * Signature: (II[BI)V
+ * Signature: (II[BI)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteI2CBlockData
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteI2CBlockData
   (JNIEnv *, jclass, jint, jint, jbyteArray, jint);
 
 /*
@@ -122,9 +122,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadDevice
 /*
  * Class:     com_diozero_pigpioj_PigpioI2C
  * Method:    i2cWriteDevice
- * Signature: (I[BI)V
+ * Signature: (I[BI)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteDevice
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteDevice
   (JNIEnv *, jclass, jint, jbyteArray, jint);
 
 /*

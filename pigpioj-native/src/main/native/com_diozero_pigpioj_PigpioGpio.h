@@ -8,10 +8,6 @@
 extern "C" {
 #endif
 
-/* The VM calls this function upon loading the native library. */
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* jvm, void* reserved);
-/* This function is called when the native library gets unloaded by the VM. */
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* jvm, void* reserved);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    initialise
@@ -29,9 +25,9 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_terminate
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setMode
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
   (JNIEnv* env, jclass clz, jint gpio, jint mode);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
@@ -45,28 +41,28 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getMode
  * Method:    setPullUpDown
  * Signature: (II)V
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPullUpDown
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPullUpDown
   (JNIEnv* env, jclass clz, jint gpio, jint pud);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    read
- * Signature: (I)Z
+ * Signature: (I)I
  */
-JNIEXPORT jboolean JNICALL Java_com_diozero_pigpioj_PigpioGpio_read
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_read
   (JNIEnv* env, jclass clz, jint gpio);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    write
- * Signature: (IZ)V
+ * Signature: (IZ)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_write
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_write
   (JNIEnv* env, jclass clz, jint gpio, jboolean value);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMDutyCycle
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
   (JNIEnv* env, jclass clz, jint gpio, jint dutyCycle);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
@@ -78,9 +74,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMDutyCycle
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMRange
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
   (JNIEnv* env, jclass clz, jint gpio, jint range);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
@@ -99,9 +95,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRealRange
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setPWMFrequency
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
   (JNIEnv* env, jclass clz, jint gpio, jint frequency);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
@@ -113,9 +109,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMFrequency
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setServoPulseWidth
- * Signature: (II)V
+ * Signature: (II)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
   (JNIEnv* env, jclass clz, jint gpio, jint pulseWidth);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
@@ -127,9 +123,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getServoPulseWidth
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    setISRFunc
- * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)V
+ * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_setISRFunc
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setISRFunc
   (JNIEnv* env, jclass clz, jint gpio, jint edge, jint timeout, jobject listener);
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio

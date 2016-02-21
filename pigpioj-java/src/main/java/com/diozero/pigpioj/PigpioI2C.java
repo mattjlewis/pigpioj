@@ -26,9 +26,6 @@ package com.diozero.pigpioj;
  * #L%
  */
 
-
-import java.io.IOException;
-
 public class PigpioI2C {
 	static {
 		PigpioJ.init();
@@ -48,43 +45,43 @@ public class PigpioI2C {
 	 * Count  (8 bits): A byte defining the length of a block operation.
 	 *
 	 * [..]: Data sent by the device. */
-	public static native int i2cOpen(int i2cBus, int i2cAddr, int i2cFlags) throws IOException;
+	public static native int i2cOpen(int i2cBus, int i2cAddr, int i2cFlags);
 	/** This closes the I2C device associated with the handle */
-	public static native void i2cClose(int handle) throws IOException;
+	public static native int i2cClose(int handle);
 	/** This reads a single byte from the device associated with handle */
-	public static native int i2cReadByte(int handle) throws IOException;
+	public static native int i2cReadByte(int handle);
 	/** This sends a single byte to the device associated with handle */
-	public static native void i2cWriteByte(int handle, int bVal) throws IOException;
+	public static native int i2cWriteByte(int handle, int bVal);
 	/** This reads a single byte from the specified register of the device associated with handle */
-	public static native int i2cReadByteData(int handle, int i2cReg) throws IOException;
+	public static native int i2cReadByteData(int handle, int i2cReg);
 	/** This writes a single byte to the specified register of the device associated with handle */
-	public static native void i2cWriteByteData(int handle, int i2cReg, int bVal) throws IOException;
+	public static native int i2cWriteByteData(int handle, int i2cReg, int bVal);
 	/** This reads a single 16 bit word from the specified register of the device associated with handle */
-	public static native int i2cReadWordData(int handle, int i2cReg) throws IOException;
+	public static native int i2cReadWordData(int handle, int i2cReg);
 	/** This writes a single 16 bit word to the specified register of the device associated with handle */
-	public static native void i2cWriteWordData(int handle, int i2cReg, int wVal) throws IOException;
+	public static native int i2cWriteWordData(int handle, int i2cReg, int wVal);
 	/** This writes 16 bits of data to the specified register of the device associated with handle and reads 16 bits of data in return */
-	public static native int i2cProcessCall(int handle, int i2cReg, int wVal) throws IOException;
+	public static native int i2cProcessCall(int handle, int i2cReg, int wVal);
 	/**
 	 * This reads a block of up to 32 bytes from the specified register of the device associated with handle.
 	 * The amount of returned data is set by the device
 	 * @return Returns the number of bytes read (>0) if OK
 	 */
-	public static native int i2cReadBlockData(int handle, int i2cReg, byte[] buf) throws IOException;
+	public static native int i2cReadBlockData(int handle, int i2cReg, byte[] buf);
 	/** This writes up to 32 bytes to the specified register of the device associated with handle */
-	public static native void i2cWriteBlockData(int handle, int i2cReg, byte[] buf, int count) throws IOException;
+	public static native int i2cWriteBlockData(int handle, int i2cReg, byte[] buf, int count);
 	/**
 	 * This reads count bytes from the specified register of the device associated with handle
 	 * @param count The count may be 1-32
 	 * @return Returns the number of bytes read (>0) if OK
 	 */
-	public static native int i2cReadI2CBlockData(int handle, int i2cReg, byte[] buf, int count) throws IOException;
+	public static native int i2cReadI2CBlockData(int handle, int i2cReg, byte[] buf, int count);
 	/** This writes 1 to 32 bytes to the specified register of the device associated with handle */
-	public static native void i2cWriteI2CBlockData(int handle, int i2cReg, byte[] buf, int count) throws IOException;
+	public static native int i2cWriteI2CBlockData(int handle, int i2cReg, byte[] buf, int count);
 	/** This reads count bytes from the raw device into buffer. Returns count (>0) if OK */
-	public static native int i2cReadDevice(int handle, byte[] buffer, int count) throws IOException;
+	public static native int i2cReadDevice(int handle, byte[] buffer, int count);
 	/** This writes count bytes from buffer to the raw device */
-	public static native void i2cWriteDevice(int handle, byte[] buffer, int count) throws IOException;
+	public static native int i2cWriteDevice(int handle, byte[] buffer, int count);
 	/** This sets the I2C (i2c-bcm2708) module "use combined transactions" parameter on or off */
-	public static native void i2cSwitchCombined(boolean setting) throws IOException;
+	public static native void i2cSwitchCombined(boolean setting);
 }

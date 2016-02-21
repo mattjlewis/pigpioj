@@ -1,6 +1,30 @@
 package com.diozero.pigpioj;
 
-import java.io.IOException;
+/*
+ * #%L
+ * pigpio Java wrapper
+ * %%
+ * Copyright (C) 2016 diozero
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
 
 public class PigpioSPI {
 	static {
@@ -40,24 +64,24 @@ public class PigpioSPI {
 	 * The default (0) sets 8 bits per word. Auxiliary SPI device only.
 	 * The other bits in flags should be set to zero
 	 */
-	public static native int spiOpen(int spiChan, int baud, int spiFlags) throws IOException;
+	public static native int spiOpen(int spiChan, int baud, int spiFlags);
 	/** This functions closes the SPI device identified by the handle */
-	public static native void spiClose(int handle) throws IOException;
+	public static native int spiClose(int handle);
 	/**
 	 * This function reads count bytes of data from the SPI device associated with the handle
 	 * @return Returns the number of bytes transferred if OK
 	 */
-	public static native int spiRead(int handle, byte[] buf, int count) throws IOException;
+	public static native int spiRead(int handle, byte[] buf, int count);
 	/**
 	 * This function writes count bytes of data from buf to the SPI device associated with the handle
 	 * @return Returns the number of bytes transferred if OK
 	 */
-	public static native int spiWrite(int handle, byte[] buf, int count) throws IOException;
+	public static native int spiWrite(int handle, byte[] buf, int count);
 	/**
 	 * This function transfers count bytes of data from txBuf to the SPI device associated
 	 * with the handle. Simultaneously count bytes of data are read from the device and
 	 * placed in rxBuf
 	 * @return Returns the number of bytes transferred if OK
 	 */
-	public static native int spiXfer(int handle, byte[] txBuf, byte[] rxBuf, int count) throws IOException;
+	public static native int spiXfer(int handle, byte[] txBuf, byte[] rxBuf, int count);
 }

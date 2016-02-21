@@ -8,25 +8,17 @@
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiOpen
   (JNIEnv* env, jclass clz, jint spiChan, jint baud, jint spiFlags) {
-	int handle = spiOpen(spiChan, baud, spiFlags);
-	if (handle < 0) {
-		throwIOException(env, "Error invoking spiOpen()");
-		return 0;
-	}
-	return handle;
+	return spiOpen(spiChan, baud, spiFlags);
 }
 
 /*
  * Class:     com_diozero_pigpioj_PigpioSPI
  * Method:    spiClose
- * Signature: (I)V
+ * Signature: (I)I
  */
-JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiClose
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiClose
   (JNIEnv* env, jclass clz, jint handle) {
-	int rc = spiClose(handle);
-	if (rc < 0) {
-		throwIOException(env, "Error invoking spiClose()");
-	}
+	return spiClose(handle);
 }
 
 /*
@@ -39,14 +31,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiRead
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_read = spiRead(handle, (char*)b, count);
-	if (is_copy) {
-		jint mode = 0;
-		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
-	}
-	if (bytes_read < 0) {
-		throwIOException(env, "Error invoking spiRead()");
-		return 0;
-	}
+	jint mode = 0;
+	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
 	return bytes_read;
 }
 
@@ -60,14 +46,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiWrite
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_written = spiWrite(handle, (char*)b, count);
-	if (is_copy) {
-		jint mode = 0;
-		(*env)->ReleaseByteArrayElements(env, buf, b, mode);
-	}
-	if (bytes_written < 0) {
-		throwIOException(env, "Error invoking spiWrite()");
-		return 0;
-	}
+	jint mode = 0;
+	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
 	return bytes_written;
 }
 
@@ -82,17 +62,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiXfer
 	jbyte* tx = (*env)->GetByteArrayElements(env, txBuf, &is_copy);
 	jbyte* rx = (*env)->GetByteArrayElements(env, rxBuf, &is_copy);
 	int bytes_transferred = spiXfer(handle, (char*)tx, (char*)rx, count);
-	if (is_copy) {
-		jint mode = 0;
-		(*env)->ReleaseByteArrayElements(env, txBuf, tx, mode);
-	}
-	if (is_copy) {
-		jint mode = 0;
-		(*env)->ReleaseByteArrayElements(env, rxBuf, rx, mode);
-	}
-	if (bytes_transferred < 0) {
-		throwIOException(env, "Error invoking spiXfer()");
-		return 0;
-	}
+	jint mode = 0;
+	(*env)->ReleaseByteArrayElements(env, txBuf, tx, mode);
+	mode = 0;
+	(*env)->ReleaseByteArrayElements(env, rxBuf, rx, mode);
 	return bytes_transferred;
 }

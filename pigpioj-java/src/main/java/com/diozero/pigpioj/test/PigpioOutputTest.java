@@ -1,4 +1,4 @@
-package com.diozero.pigpioj;
+package com.diozero.pigpioj.test;
 
 /*
  * #%L
@@ -29,48 +29,80 @@ package com.diozero.pigpioj;
 
 import java.io.IOException;
 
+import com.diozero.pigpioj.PigpioGpio;
+
 public class PigpioOutputTest {
 	public static void main(String[] args) {
 		int pin = 18;
 		try {
 			int version = PigpioGpio.initialise();
 			System.out.println("version: " + version);
+			if (version < 0) {
+				throw new IOException("Error in PigpioGpio.initialise()");
+			}
 			
-			PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_OUTPUT);
+			int rc = PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_OUTPUT);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setMode()");
+			}
 
 			for (int i=0; i<5; i++) {
 				System.out.println("on");
-				PigpioGpio.write(pin, true);
+				rc = PigpioGpio.write(pin, true);
+				if (rc < 0) {
+					throw new IOException("Error in PigpioGpio.write()");
+				}
 				Thread.sleep(500);
 				
 				System.out.println("off");
-				PigpioGpio.write(pin, false);
+				rc = PigpioGpio.write(pin, false);
+				if (rc < 0) {
+					throw new IOException("Error in PigpioGpio.write()");
+				}
 				Thread.sleep(500);
 			}
 			int pwm_max = 255;
 			
 			System.out.println("pwm full on");
-			PigpioGpio.setPWMDutyCycle(pin, pwm_max);
+			rc = PigpioGpio.setPWMDutyCycle(pin, pwm_max);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm full off");
-			PigpioGpio.setPWMDutyCycle(pin, 0);
+			rc = PigpioGpio.setPWMDutyCycle(pin, 0);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 25% off");
-			PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.25));
+			rc = PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.25));
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 50%");
-			PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.50));
+			rc = PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.50));
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 75%");
-			PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.75));
+			rc = PigpioGpio.setPWMDutyCycle(pin, (int)(pwm_max*.75));
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm full off");
-			PigpioGpio.setPWMDutyCycle(pin, 0);
+			rc = PigpioGpio.setPWMDutyCycle(pin, 0);
+			if (rc < 0) {
+				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+			}
 			Thread.sleep(500);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

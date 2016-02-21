@@ -27,8 +27,6 @@ package com.diozero.pigpioj;
  */
 
 
-import java.io.IOException;
-
 /**
  * pigpio JNI wrapper, inspiration from this project: https://github.com/nkolban/jpigpio
  */
@@ -51,28 +49,28 @@ public class PigpioGpio {
 	
 	/** Initialises the library, call before using the other library functions.
 	 * Returns the pigpio version number if OK */
-	public static native int initialise() throws IOException;
+	public static native int initialise();
 	/** Terminates the library */
 	public static native void terminate();
 	/** Sets the gpio mode, typically input or output */
-	public static native void setMode(int gpio, int mode) throws IOException;
+	public static native int setMode(int gpio, int mode);
 	/** Gets the gpio mode */
-	public static native int getMode(int gpio) throws IOException;
+	public static native int getMode(int gpio);
 	/** Sets or clears resistor pull ups or downs on the gpio */
-	public static native void setPullUpDown(int gpio, int pud) throws IOException;
+	public static native int setPullUpDown(int gpio, int pud);
 	/** Reads the gpio level, on or off */
-	public static native boolean read(int gpio) throws IOException;
+	public static native int read(int gpio);
 	/** Sets the gpio level, on or off */
-	public static native void write(int gpio, boolean level) throws IOException;
+	public static native int write(int gpio, boolean level);
 	/** Starts PWM on the gpio, duty cycle between 0 (off) and range (fully on). Range defaults to 255
 	 * The gpioSetPWMrange function may be used to change the default range of 255 */
-	public static native void setPWMDutyCycle(int gpio, int dutyCycle) throws IOException;
+	public static native int setPWMDutyCycle(int gpio, int dutyCycle);
 	/** Returns the PWM duty cycle setting for the gpio
 	 * For normal PWM the duty cycle will be out of the defined range for the gpio (see gpioGetPWMrange).
 	 * If a hardware clock is active on the gpio the reported duty cycle will be 500000 (500k) out of 1000000 (1M).
 	 * If hardware PWM is active on the gpio the reported duty cycle will be out of a 1000000 (1M).
 	 * Normal PWM range defaults to 255 */
-	public static native int getPWMDutyCycle(int gpio) throws IOException;
+	public static native int getPWMDutyCycle(int gpio);
 	/** Selects the duty cycle range to be used for the gpio.
 	 * Subsequent calls to gpioPWM will use a duty cycle between 0 (off) and range (fully on)
 	 * If PWM is currently active on the gpio its duty cycle will be scaled to reflect the new range
@@ -80,14 +78,14 @@ public class PigpioGpio {
 	 * 25,   50,  100,  125,  200,  250,  400,   500,   625,
 	 * 800, 1000, 1250, 2000, 2500, 4000, 5000, 10000, 20000
 	 * The real value set by gpioPWM is (dutycycle * real range) / range */
-	public static native void setPWMRange(int gpio, int range) throws IOException;
+	public static native int setPWMRange(int gpio, int range);
 	/** Returns the duty cycle range used for the gpio if OK
 	 * If a hardware clock or hardware PWM is active on the gpio the reported range will be 1000000 (1M) */
-	public static native int getPWMRange(int gpio) throws IOException;
+	public static native int getPWMRange(int gpio);
 	/** Returns the real range used for the gpio if OK
 	 * If a hardware clock is active on the gpio the reported real range will be 1000000 (1M).
 	 * If hardware PWM is active on the gpio the reported real range will be approximately 250M divided by the set PWM frequency */
-	public static native int getPWMRealRange(int gpio) throws IOException;
+	public static native int getPWMRealRange(int gpio);
 	/** Sets the frequency in hertz to be used for the gpio
 	 * Returns the numerically closest frequency if OK
 	 * The selectable frequencies depend upon the sample rate which may be 1, 2, 4, 5, 8, or 10 microseconds (default 5).
@@ -109,12 +107,12 @@ public class PigpioGpio {
 	 *           156   125   100   63   50   31   25   13    6
 	 *     10:  4000  2000  1000  800  500  400  250  200  160
 	 *           125   100    80   50   40   25   20   10    5 */
-	public static native void setPWMFrequency(int gpio, int frequency) throws IOException;
+	public static native int setPWMFrequency(int gpio, int frequency);
 	/** Returns the frequency (in hertz) used for the gpio if OK
 	 * For normal PWM the frequency will be that defined for the gpio by gpioSetPWMfrequency.
 	 * If a hardware clock is active on the gpio the reported frequency will be that set by gpioHardwareClock.
 	 * If hardware PWM is active on the gpio the reported frequency will be that set by gpioHardwarePWM */
-	public static native int getPWMFrequency(int gpio) throws IOException;
+	public static native int getPWMFrequency(int gpio);
 	/** Starts servo pulses on the gpio, 0 (off), 500 (most anti-clockwise) to 2500 (most clockwise)
 	 * The range supported by servos varies and should probably be determined by experiment.
 	 * A value of 1500 should always be safe and represents the mid-point of rotation.
@@ -134,9 +132,9 @@ public class PigpioGpio {
 	 * gpioSetPWMfrequency(25, 400);
 	 * gpioSetPWMrange(25, 2500);
 	 * Thereafter use the PWM command to move the servo, e.g. gpioPWM(25, 1500) will set a 1500 us pulse */
-	public static native void setServoPulseWidth(int gpio, int pulseWidth) throws IOException;
+	public static native int setServoPulseWidth(int gpio, int pulseWidth);
 	/** Returns the servo pulse width setting for the gpio */
-	public static native int getServoPulseWidth(int gpio) throws IOException;
+	public static native int getServoPulseWidth(int gpio);
 	/** Registers a function to be called (a callback) whenever the specified gpio interrupt occurs
 	 * One function may be registered per gpio.
 	 * The function is passed the gpio, the current level, and the current tick.
@@ -155,7 +153,7 @@ public class PigpioGpio {
 	 * It may not be the same as the expected edge as interrupts happening in rapid
 	 * succession may be missed by the kernel (i.e. this mechanism can not be used
 	 * to capture several interrupts only a few microseconds apart) */
-	public static native void setISRFunc(int gpio, int edge, int timeout, PigpioCallback callback) throws IOException;
+	public static native int setISRFunc(int gpio, int edge, int timeout, PigpioCallback callback);
 	/** Returns the pigpio version */
-	public static native int getVersion() throws IOException;
+	public static native int getVersion();
 }
