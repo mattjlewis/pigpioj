@@ -1,5 +1,5 @@
 # Makefile:
-#	libpigpioprovider - Java (JNI) library wrapper for pigpio for the Raspberry Pi
+#	libpigpioj - Java (JNI) library wrapper of pigpio for the Raspberry Pi
 #
 
 TARGET=libpigpioj.so
@@ -21,9 +21,9 @@ SRC	=   pigpioj_util.c com_diozero_pigpioj_PigpioGpio.c com_diozero_pigpioj_Pigp
 
 OBJ =	$(SRC:.c=.o)
 
-all:	lib
+all:	$(TARGET)
 
-lib:	$(OBJ)
+$(TARGET):	$(OBJ)
 	@echo [LINK] $(TARGET)
 	@$(CC) $(OBJ) -shared -o $(TARGET) $(LIBS)
 
