@@ -90,12 +90,12 @@ JNIEXPORT void JNICALL Java_com_diozero_pigpioj_PigpioGpio_terminate
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    setMode
- * Signature: (II)I
+ * Method:    getVersion
+ * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
-  (JNIEnv* env, jclass clz, jint gpio, jint mode) {
-	return gpioSetMode(gpio, mode);
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getVersion
+  (JNIEnv* env, jclass clz) {
+	return gpioVersion();
 }
 
 /*
@@ -106,6 +106,16 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getMode
   (JNIEnv* env, jclass clz, jint gpio) {
 	return gpioGetMode(gpio);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    setMode
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setMode
+  (JNIEnv* env, jclass clz, jint gpio, jint mode) {
+	return gpioSetMode(gpio, mode);
 }
 
 /*
@@ -140,16 +150,6 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_write
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    setPWMDutyCycle
- * Signature: (II)I
- */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
-  (JNIEnv* env, jclass clz, jint gpio, jint dutyCycle) {
-	return gpioPWM(gpio, dutyCycle);
-}
-
-/*
- * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    getPWMDutyCycle
  * Signature: (I)I
  */
@@ -160,12 +160,12 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMDutyCycle
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    setPWMRange
+ * Method:    setPWMDutyCycle
  * Signature: (II)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
-  (JNIEnv* env, jclass clz, jint gpio, jint range) {
-	return gpioSetPWMrange(gpio, range);
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMDutyCycle
+  (JNIEnv* env, jclass clz, jint gpio, jint dutyCycle) {
+	return gpioPWM(gpio, dutyCycle);
 }
 
 /*
@@ -180,22 +180,22 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRange
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    setPWMRange
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMRange
+  (JNIEnv* env, jclass clz, jint gpio, jint range) {
+	return gpioSetPWMrange(gpio, range);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
  * Method:    getPWMRealRange
  * Signature: (I)I
  */
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMRealRange
   (JNIEnv* env, jclass clz, jint gpio) {
 	return gpioGetPWMrealRange(gpio);
-}
-
-/*
- * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    setPWMFrequency
- * Signature: (II)I
- */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
-  (JNIEnv* env, jclass clz, jint gpio, jint frequency) {
-	return gpioSetPWMfrequency(gpio, frequency);
 }
 
 /*
@@ -210,12 +210,12 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getPWMFrequency
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    setServoPulseWidth
+ * Method:    setPWMFrequency
  * Signature: (II)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
-  (JNIEnv* env, jclass clz, jint gpio, jint pulseWidth) {
-	return gpioServo(gpio, pulseWidth);
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setPWMFrequency
+  (JNIEnv* env, jclass clz, jint gpio, jint frequency) {
+	return gpioSetPWMfrequency(gpio, frequency);
 }
 
 /*
@@ -226,6 +226,16 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
 JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getServoPulseWidth
   (JNIEnv* env, jclass clz, jint gpio) {
 	return gpioGetServoPulsewidth(gpio);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    setServoPulseWidth
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setServoPulseWidth
+  (JNIEnv* env, jclass clz, jint gpio, jint pulseWidth) {
+	return gpioServo(gpio, pulseWidth);
 }
 
 /*
@@ -275,10 +285,40 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_setISRFunc
 
 /*
  * Class:     com_diozero_pigpioj_PigpioGpio
- * Method:    getVersion
- * Signature: ()I
+ * Method:    noiseFilter
+ * Signature: (III)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_getVersion
-  (JNIEnv* env, jclass clz) {
-	return gpioVersion();
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_noiseFilter
+  (JNIEnv* env, jclass clz, jint gpio, jint steadyMs, jint activeMs) {
+	return gpioNoiseFilter(gpio, steadyMs, activeMs);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    glitchFilter
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_glitchFilter
+  (JNIEnv* env, jclass clz, jint gpio, jint steadyMs) {
+	return gpioGlitchFilter(gpio, steadyMs);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    hardwareClock
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_hardwareClock
+  (JNIEnv* env, jclass clz, jint gpio, jint clockFreq) {
+	return gpioHardwareClock(gpio, clockFreq);
+}
+
+/*
+ * Class:     com_diozero_pigpioj_PigpioGpio
+ * Method:    hardwarePwm
+ * Signature: (III)I
+ */
+JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioGpio_hardwarePwm
+  (JNIEnv* env, jclass clz, jint gpio, jint pwmFreq, jint pwmDuty) {
+	return gpioHardwarePWM(gpio, pwmFreq, pwmDuty);
 }
