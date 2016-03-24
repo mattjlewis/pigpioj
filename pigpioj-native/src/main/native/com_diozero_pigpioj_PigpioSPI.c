@@ -31,8 +31,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiRead
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_read = spiRead(handle, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = 0 - Copy back the content and free the buffer (b)
+	(*env)->ReleaseByteArrayElements(env, buf, b, 0);
 	return bytes_read;
 }
 
@@ -46,8 +46,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiWrite
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_written = spiWrite(handle, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
 	return bytes_written;
 }
 
@@ -62,9 +62,9 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioSPI_spiXfer
 	jbyte* tx = (*env)->GetByteArrayElements(env, txBuf, &is_copy);
 	jbyte* rx = (*env)->GetByteArrayElements(env, rxBuf, &is_copy);
 	int bytes_transferred = spiXfer(handle, (char*)tx, (char*)rx, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, txBuf, tx, mode);
-	mode = 0;
-	(*env)->ReleaseByteArrayElements(env, rxBuf, rx, mode);
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, txBuf, tx, JNI_ABORT);
+	// mode = 0 - Copy back the content and free the buffer (rx)
+	(*env)->ReleaseByteArrayElements(env, rxBuf, rx, 0);
 	return bytes_transferred;
 }

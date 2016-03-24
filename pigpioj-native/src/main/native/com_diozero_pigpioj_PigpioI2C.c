@@ -101,8 +101,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadBlockData
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_read = i2cReadBlockData(handle, i2cReg, (char*)b);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = 0 - Copy back the content and free the buffer (b)
+	(*env)->ReleaseByteArrayElements(env, buf, b, 0);
 
 	return bytes_read;
 }
@@ -117,8 +117,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteBlockData
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int rc = i2cWriteBlockData(handle, i2cReg, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
 	return rc;
 }
 
@@ -132,8 +132,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadI2CBlockData
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_read = i2cReadI2CBlockData(handle, i2cReg, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = 0 - Copy back the content and free the buffer (b)
+	(*env)->ReleaseByteArrayElements(env, buf, b, 0);
 	return bytes_read;
 }
 
@@ -147,8 +147,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteI2CBlockData
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int rc = i2cWriteI2CBlockData(handle, i2cReg, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
 
 	return rc;
 }
@@ -163,8 +163,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cReadDevice
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int bytes_read = i2cReadDevice(handle, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = 0 - Copy back the content and free the buffer (b)
+	(*env)->ReleaseByteArrayElements(env, buf, b, 0);
 	return bytes_read;
 }
 
@@ -178,8 +178,8 @@ JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioI2C_i2cWriteDevice
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
 	int rc = i2cWriteDevice(handle, (char*)b, count);
-	jint mode = 0;
-	(*env)->ReleaseByteArrayElements(env, buf, b, mode);
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
 	return rc;
 }
 
