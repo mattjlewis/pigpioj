@@ -10,9 +10,9 @@ INCLUDE	     = -I. \
                -I/$(JAVA_HOME)/include/linux                   \
                -I/usr/local/include -I/usr/local/include/linux
 
-CFLAGS      := -Wall -pthread $(INCLUDE)
+CFLAGS      := -O3 -Wall -pthread -fPIC $(INCLUDE)
 
-LIBS         =  -lpigpio -lrt
+LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic -lrt
 
 # Should not alter anything below this line
 ###############################################################################
