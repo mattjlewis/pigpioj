@@ -1,6 +1,6 @@
 #include "com_diozero_pigpioj_PigpioGpio.h"
 #include "pigpioj_util.h"
-#include <time.h>
+#include <sys/time.h>
 
 #define MAX_GPIO_PINS 50
 
@@ -24,7 +24,10 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	}
 
 	// Now get the UNIX epoch time
-	time_t epoch_time = time(NULL);
+	//time_t epoch_time = time(NULL);
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	unsigned long long epoch_time = (unsigned long long)(tp.tv_sec) * 1000 + (unsigned long long)(tp.tv_usec) / 1000;
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		printf("PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);
