@@ -32,10 +32,21 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 public class PigpioJ {
+	public static final int PI_BAD_USER_GPIO = -2;
+	public static final int PI_GPIO_IN_USE = -50;
+	public static final int PI_I2C_READ_FAILED = -83;
+	public static final int PI_I2C_WRITE_FAILED = -82;
+	public static final int PI_BAD_POINTER = -90;
+	public static final int PI_NOT_I2C_GPIO = -108;
+	public static final int PI_BAD_I2C_RLEN = -109;
+	public static final int PI_BAD_I2C_WLEN = -110;
+	public static final int PI_BAD_I2C_CMD = -111;
+	public static final int PI_BAD_I2C_BAUD = -112;
+	
 	private static final String LIB_NAME = "pigpioj";
 	private static Boolean loaded = Boolean.FALSE;
-	public static void init() {
-		synchronized (loaded) {
+	static void init() {
+		synchronized (PigpioJ.class) {
 			if (!loaded.booleanValue()) {
 				try {
 					Path path = Files.createTempFile("lib" + LIB_NAME, ".so");

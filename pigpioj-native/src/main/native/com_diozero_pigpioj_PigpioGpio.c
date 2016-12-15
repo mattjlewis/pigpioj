@@ -6,6 +6,12 @@
 
 jobject listeners[MAX_GPIO_PINS];
 
+unsigned long long getEpochTime() {
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	return (unsigned long long)(tp.tv_sec) * 1000 + (unsigned long long)(tp.tv_usec) / 1000;
+}
+
 void callbackFunction(int gpio, int level, uint32_t tick) {
 	// Attach to the current JVM thread
 	JavaVM* vm = getGlobalJavaVM();
@@ -24,10 +30,7 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	}
 
 	// Now get the UNIX epoch time
-	//time_t epoch_time = time(NULL);
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	unsigned long long epoch_time = (unsigned long long)(tp.tv_sec) * 1000 + (unsigned long long)(tp.tv_usec) / 1000;
+	unsigned long long epoch_time = getEpochTime();
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		printf("PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);

@@ -17,7 +17,7 @@ LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic -lrt
 # Should not alter anything below this line
 ###############################################################################
 
-SRC	=   pigpioj_util.c com_diozero_pigpioj_PigpioGpio.c com_diozero_pigpioj_PigpioI2C.c com_diozero_pigpioj_PigpioSPI.c
+SRC	=   pigpioj_util.c com_diozero_pigpioj_PigpioGpio.c com_diozero_pigpioj_PigpioI2C.c com_diozero_pigpioj_PigpioSPI.c com_diozero_pigpioj_PigpioBitBangI2C.c
 
 OBJ =	$(SRC:.c=.o)
 
