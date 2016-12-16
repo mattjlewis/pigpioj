@@ -4,7 +4,7 @@
 
 	<groupId>com.diozero.pigpioj</groupId>
 	<artifactId>pigpioj-java</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>pigpio Java wrapper</name>
 	<url>https://github.com/mattjlewis/pigpioj</url>
 	<inceptionYear>2016</inceptionYear>
