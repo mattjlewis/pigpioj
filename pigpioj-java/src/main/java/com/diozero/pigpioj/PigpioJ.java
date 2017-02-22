@@ -27,9 +27,11 @@ package com.diozero.pigpioj;
  */
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PigpioJ {
 	public static final int PI_BAD_USER_GPIO = -2;
@@ -44,24 +46,36 @@ public class PigpioJ {
 	public static final int PI_BAD_I2C_BAUD = -112;
 	
 	private static final String LIB_NAME = "pigpioj";
-	private static Boolean loaded = Boolean.FALSE;
+	private static AtomicBoolean loaded = new AtomicBoolean();
 	static void init() {
-		synchronized (PigpioJ.class) {
-			if (!loaded.booleanValue()) {
-				try {
-					Path path = Files.createTempFile("lib" + LIB_NAME, ".so");
-					path.toFile().deleteOnExit();
-					Files.copy(PigpioJ.class.getResourceAsStream("/lib/lib" + LIB_NAME + ".so"),
-							path, StandardCopyOption.REPLACE_EXISTING);
-					System.load(path.toString());
-					loaded = Boolean.TRUE;
-				} catch (IOException e) {
-					System.out.println("Error loading library from classpath: " + e);
-					e.printStackTrace();
-					
-					// Try load the usual way...
-					System.loadLibrary(LIB_NAME);
-					loaded = Boolean.TRUE;
+		synchronized (loaded) {
+			if (!loaded.get()) {
+				@SuppressWarnings("resource")
+				InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + LIB_NAME + ".so");
+				if (is != null) {
+					try {
+						Path path = Files.createTempFile("lib" + LIB_NAME, ".so");
+						path.toFile().deleteOnExit();
+						Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+						Runtime.getRuntime().load(path.toString());
+						loaded.set(true);
+						System.out.println("Loaded '" + LIB_NAME + "' from classpath");
+					} catch (Throwable t) {
+						System.out.println("Error loading library from classpath, trying System.loadLibrary: " + t);
+					} finally {
+						try { is.close(); } catch (IOException e) { }
+					}
+				}
+				if (! loaded.get()) {
+					// Try load from the Java system library path (-Djava.library.path)
+					try {
+						System.loadLibrary(LIB_NAME);
+						loaded.set(true);
+						System.out.println("Loaded '" + LIB_NAME + "' from system library path");
+					} catch (Throwable t) {
+						System.out.println("Error loading library from system library path: " + t);
+						t.printStackTrace();
+					}
 				}
 			}
 		}
