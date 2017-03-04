@@ -1,0 +1,107 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.diozero.pigpioj</groupId>
+	<artifactId>pigpioj</artifactId>
+	<version>1.0.1</version>
+	<name>pigpioj</name>
+	<url>https://github.com/mattjlewis/pigpioj</url>
+	<inceptionYear>2016</inceptionYear>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>pigpioj-java</module>
+		<module>pigpioj-native</module>
+	</modules>
+
+	<organization>
+		<name>diozero</name>
+		<url>http://www.diozero.com</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>mit</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<issueManagement>
+		<url>https://github.com/mattjlewis/pigpioj/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+
+	<scm>
+		<url>https://github.com/mattjlewis/pigpioj</url>
+		<connection>scm:git:git://github.com/mattjlewis/pigpioj.git</connection>
+		<developerConnection>scm:git:git@github.com:mattjlewis/pigpioj.git</developerConnection>
+	</scm>
+
+	<developers>
+		<developer>
+			<email>deviceiozero@gmail.com</email>
+			<name>Matthew Lewis</name>
+			<url>https://github.com/mattjlewis</url>
+			<id>mattjlewis</id>
+		</developer>
+		<developer>
+			<email>sw-dev@computerlyrik.de</email>
+			<name>Christian Fischer</name>
+			<url>https://github.com/computerlyrik</url>
+			<id>computerlyrik</id>
+		</developer>
+
+	</developers>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<eclipse.m2e.lifecycle-mapping.version>1.0.0</eclipse.m2e.lifecycle-mapping.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.diozero.pigpioj</groupId>
+			<artifactId>pigpioj-java</artifactId>
+			<version>1.0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.diozero.pigpioj</groupId>
+			<artifactId>pigpioj-native</artifactId>
+			<version>1.0.1</version>
+			<type>zip</type>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>pigpioj-release</id>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
