@@ -1,4 +1,4 @@
-package com.diozero.pigpioj;
+package uk.pigpioj;
 
 /*
  * #%L
@@ -27,10 +27,6 @@ package com.diozero.pigpioj;
  */
 
 public class PigpioSPI {
-	static {
-		PigpioJ.init();
-	}
-	
 	/**
 	 * This function returns a handle for the SPI device on the channel. Data will be
 	 * transferred at baud bits per second. The flags may be used to modify the default
@@ -63,24 +59,45 @@ public class PigpioSPI {
 	 * bbbbbb defines the word size in bits (0-32).
 	 * The default (0) sets 8 bits per word. Auxiliary SPI device only.
 	 * The other bits in flags should be set to zero
+	 * @param spiChan SPI channel
+	 * @param baud Baud rate
+	 * @param spiFlags SPI flags
+	 * @return Handle for future communication
 	 */
 	public static native int spiOpen(int spiChan, int baud, int spiFlags);
-	/** This functions closes the SPI device identified by the handle */
+	
+	/** This functions closes the SPI device identified by the handle
+	 * @param handle File descriptor from {@link uk.pigpioj.PigpioSPI#spiOpen spiOpen}
+	 * @return Status
+	 */
 	public static native int spiClose(int handle);
+	
 	/**
 	 * This function reads count bytes of data from the SPI device associated with the handle
+	 * @param handle File descriptor from {@link uk.pigpioj.PigpioSPI#spiOpen spiOpen}
+	 * @param buf Buffer for the data read
+	 * @param count Number of bytes to read
 	 * @return Returns the number of bytes transferred if OK
 	 */
 	public static native int spiRead(int handle, byte[] buf, int count);
+	
 	/**
 	 * This function writes count bytes of data from buf to the SPI device associated with the handle
+	 * @param handle File descriptor from {@link uk.pigpioj.PigpioSPI#spiOpen spiOpen}
+	 * @param buf Buffer for the data to write
+	 * @param count Number of bytes to write
 	 * @return Returns the number of bytes transferred if OK
 	 */
 	public static native int spiWrite(int handle, byte[] buf, int count);
+	
 	/**
 	 * This function transfers count bytes of data from txBuf to the SPI device associated
 	 * with the handle. Simultaneously count bytes of data are read from the device and
 	 * placed in rxBuf
+	 * @param handle File descriptor from {@link uk.pigpioj.PigpioSPI#spiOpen spiOpen}
+	 * @param txBuf Buffer for the data to write
+	 * @param rxBuf Buffer for the data read
+	 * @param count Number of bytes to write
 	 * @return Returns the number of bytes transferred if OK
 	 */
 	public static native int spiXfer(int handle, byte[] txBuf, byte[] rxBuf, int count);

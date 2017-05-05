@@ -1,32 +1,33 @@
-#include "com_diozero_pigpioj_PigpioBitBangI2C.h"
+#include "uk_pigpioj_PigpioBitBangI2C.h"
+
 #include "pigpioj_util.h"
 
 /*
- * Class:     com_diozero_pigpioj_PigpioBitBangI2C
+ * Class:     uk_pigpioj_PigpioBitBangI2C
  * Method:    bbI2COpen
  * Signature: (III)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioBitBangI2C_bbI2COpen
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2COpen
   (JNIEnv* env, jclass clz, jint sda, jint scl, jint baud) {
 	return bbI2COpen(sda, scl, baud);
 }
 
 /*
- * Class:     com_diozero_pigpioj_PigpioBitBangI2C
+ * Class:     uk_pigpioj_PigpioBitBangI2C
  * Method:    bbI2CClose
  * Signature: (I)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioBitBangI2C_bbI2CClose
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2CClose
   (JNIEnv* env, jclass clz, jint sda) {
 	return bbI2CClose(sda);
 }
 
 /*
- * Class:     com_diozero_pigpioj_PigpioBitBangI2C
+ * Class:     uk_pigpioj_PigpioBitBangI2C
  * Method:    bbI2CZIP
  * Signature: (I[BI[BI)I
  */
-JNIEXPORT jint JNICALL Java_com_diozero_pigpioj_PigpioBitBangI2C_bbI2CZip
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2CZip
   (JNIEnv* env, jclass clz, jint sda, jbyteArray inBuf, jint inLen, jbyteArray outBuf, jint outLen) {
 	jboolean is_copy;
 	jbyte* in_buf = (*env)->GetByteArrayElements(env, inBuf, &is_copy);

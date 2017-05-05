@@ -1,4 +1,4 @@
-package com.diozero.pigpioj;
+package uk.pigpioj;
 
 /*
  * #%L
@@ -31,52 +31,78 @@ package com.diozero.pigpioj;
  * pigpio JNI wrapper, inspiration from this project: https://github.com/nkolban/jpigpio
  */
 public class PigpioGpio {
-	static {
-		PigpioJ.init();
-	}
-	
-	public static final int MODE_PI_INPUT = 0;
-	public static final int MODE_PI_OUTPUT = 1;
-	
-	public static final int NO_EDGE = -1;
-	public static final int RISING_EDGE = 0;
-	public static final int FALLING_EDGE = 1;
-	public static final int EITHER_EDGE = 2;
-	
-	public static final int PI_PUD_OFF = 0;
-	public static final int PI_PUD_DOWN = 1;
-	public static final int PI_PUD_UP = 2;
-	
 	/** Initialises the library, call before using the other library functions.
-	 * Returns the pigpio version number if OK */
+	 * @return the pigpio version number if OK
+	 */
 	public static native int initialise();
+	
 	/** Terminates the library */
 	public static native void terminate();
-	/** Returns the pigpio version */
+	
+	/** @return the pigpio version */
 	public static native int getVersion();
 	
-	/** Gets the GPIO mode */
+	/** @return the Pi Hardware revision */
+	public static native int getHardwareRevision();
+	
+	/** Gets the GPIO mode
+	 * @param gpio GPIO
+	 * @return GPIO mode
+	 */
 	public static native int getMode(int gpio);
-	/** Sets the GPIO mode, typically input or output */
+	
+	/** Sets the GPIO mode, typically input or output
+	 * @param gpio GPIO
+	 * @param mode Mode
+	 * @return Status
+	 */
 	public static native int setMode(int gpio, int mode);
-	/** Sets or clears resistor pull ups or downs on the GPIO */
+	
+	/** Sets or clears resistor pull ups or downs on the GPIO
+	 * @param gpio GPIO
+	 * @param pud Pull up/down value
+	 * @return Status
+	 */
 	public static native int setPullUpDown(int gpio, int pud);
-	/** Reads the GPIO level, on or off */
+	
+	/** Reads the GPIO level, on or off
+	 * @param gpio GPIO
+	 * @return Status
+	 */
 	public static native int read(int gpio);
-	/** Sets the GPIO level, on or off */
+	
+	/** Sets the GPIO level, on or off
+	 * @param gpio GPIO
+	 * @param level on/off
+	 * @return Status
+	 */
 	public static native int write(int gpio, boolean level);
+	
 	/** Returns the PWM duty cycle setting for the GPIO
 	 * For normal PWM the duty cycle will be out of the defined range for the GPIO (see getPWMRange).
 	 * If a hardware clock is active on the GPIO the reported duty cycle will be 500000 (500k) out of 1000000 (1M).
 	 * If hardware PWM is active on the GPIO the reported duty cycle will be out of a 1000000 (1M).
-	 * Normal PWM range defaults to 255 */
+	 * Normal PWM range defaults to 255
+	 * @param gpio GPIO
+	 * @return Status
+	 */
 	public static native int getPWMDutyCycle(int gpio);
+	
 	/** Starts PWM on the GPIO, duty cycle between 0 (off) and range (fully on). Range defaults to 255
-	 * The setPWMRange function may be used to change the default range of 255 */
+	 * The setPWMRange function may be used to change the default range of 255
+	 * @param gpio GPIO
+	 * @param dutyCycle New duty cycle value
+	 * @return Status
+	 */
 	public static native int setPWMDutyCycle(int gpio, int dutyCycle);
+	
 	/** Returns the duty cycle range used for the GPIO if OK
-	 * If a hardware clock or hardware PWM is active on the GPIO the reported range will be 1000000 (1M) */
+	 * If a hardware clock or hardware PWM is active on the GPIO the reported range will be 1000000 (1M)
+	 * @param gpio GPIO
+	 * @return Status
+	 */
 	public static native int getPWMRange(int gpio);
+	
 	/** Selects the duty cycle range to be used for the GPIO.
 	 * Subsequent calls to setPWMDutyCycle will use a duty cycle between 0 (off) and range (fully on)
 	 * If PWM is currently active on the GPIO its duty cycle will be scaled to reflect the new range
@@ -86,17 +112,29 @@ public class PigpioGpio {
 	 * 800, 1000, 1250, 2000, 2500, 4000, 5000, 10000, 20000
 	 * </pre>
 	 * The real value set by setPWMDutyCycle is <code>(duty cycle * real range) / range</code>
+	 * @param gpio GPIO
+	 * @param range Range
+	 * @return Status
 	 */
 	public static native int setPWMRange(int gpio, int range);
+	
 	/** Returns the real range used for the GPIO if OK
 	 * If a hardware clock is active on the GPIO the reported real range will be 1000000 (1M).
-	 * If hardware PWM is active on the GPIO the reported real range will be approximately 250M divided by the set PWM frequency */
+	 * If hardware PWM is active on the GPIO the reported real range will be approximately 250M divided by the set PWM frequency
+	 * @param gpio GPIO
+	 * @return PWM Range
+	 */
 	public static native int getPWMRealRange(int gpio);
+	
 	/** Returns the frequency (in hertz) used for the GPIO if OK
 	 * For normal PWM the frequency will be that defined for the GPIO by setPWMFrequency.
 	 * If a hardware clock is active on the GPIO the reported frequency will be that set by gpioHardwareClock.
-	 * If hardware PWM is active on the GPIO the reported frequency will be that set by gpioHardwarePWM */
+	 * If hardware PWM is active on the GPIO the reported frequency will be that set by gpioHardwarePWM
+	 * @param gpio GPIO
+	 * @return PWM frequency
+	 */
 	public static native int getPWMFrequency(int gpio);
+	
 	/** Sets the frequency in hertz to be used for the GPIO
 	 * Returns the numerically closest frequency if OK
 	 * The selectable frequencies depend upon the sample rate which may be 1, 2, 4, 5, 8, or 10 microseconds (default 5).
@@ -120,14 +158,19 @@ public class PigpioGpio {
 	 *     10:  4000  2000  1000  800  500  400  250  200  160
 	 *           125   100    80   50   40   25   20   10    5
 	 * </pre>
+	 * @param gpio GPIO
+	 * @param frequency Frequency
+	 * @return Status
 	 */
 	public static native int setPWMFrequency(int gpio, int frequency);
+	
 	/**
 	 * Returns the servo pulse width setting for the GPIO
-	 * @param gpio Pin number
+	 * @param gpio GPIO number
 	 * @return 0 (off), 500 (most anti-clockwise) to 2500 (most clockwise) if OK, otherwise PI_BAD_USER_GPIO or PI_NOT_SERVO_GPIO
 	 */
 	public static native int getServoPulseWidth(int gpio);
+	
 	/** Starts servo pulses on the GPIO, 0 (off), 500 (most anti-clockwise) to 2500 (most clockwise)
 	 * The range supported by servos varies and should probably be determined by experiment.
 	 * A value of 1500 should always be safe and represents the mid-point of rotation.
@@ -151,11 +194,12 @@ public class PigpioGpio {
 	 * setPWMRange(25, 2500);
 	 * </pre>
 	 * Thereafter use the PWM command to move the servo, e.g. setPWMDutyCycle(25, 1500) will set a 1500 us pulse
-	 * @param gpio Pin number 0-31 
+	 * @param gpio GPIO number 0-31 
 	 * @param pulseWidth Pulse width in microseconds, accepted values: 0, 500-2500 
 	 * @return 0 if OK, otherwise PI_BAD_USER_GPIO or PI_BAD_PULSEWIDTH
 	 */
 	public static native int setServoPulseWidth(int gpio, int pulseWidth);
+	
 	/** Registers a function to be called (a callback) whenever the specified GPIO interrupt occurs
 	 * One function may be registered per GPIO.
 	 * The function is passed the GPIO, the current level, and the current tick.
@@ -173,8 +217,15 @@ public class PigpioGpio {
 	 * or PI_TIMEOUT if the optional interrupt timeout expired.
 	 * It may not be the same as the expected edge as interrupts happening in rapid
 	 * succession may be missed by the kernel (i.e. this mechanism can not be used
-	 * to capture several interrupts only a few microseconds apart) */
+	 * to capture several interrupts only a few microseconds apart)
+	 * @param gpio GPIO
+	 * @param edge None / Rising / Falling / None
+	 * @param timeout Timeout
+	 * @param callback Callback function
+	 * @return Status
+	 */
 	public static native int setISRFunc(int gpio, int edge, int timeout, PigpioCallback callback);
+	
 	/**
 	 * Sets a noise filter on a GPIO.
 	 * Level changes on the GPIO are ignored until a level which has been stable for steady
@@ -182,12 +233,13 @@ public class PigpioGpio {
 	 * microseconds after which the process repeats.
 	 * Note, level changes before and after the active period may be reported. Your software
 	 * must be designed to cope with such reports.
-	 * @param gpio 0-31
+	 * @param gpio  GPIO (0-31)
 	 * @param steadyMs 0-300000
 	 * @param activeMs 0-1000000
 	 * @return 0 if OK, otherwise PI_BAD_USER_GPIO, or PI_BAD_FILTER
 	 */
 	public static native int noiseFilter(int gpio, int steadyMs, int activeMs);
+	
 	/**
 	 * Sets a glitch filter on a GPIO.
 	 * Level changes on the GPIO are not reported unless the level has been stable for at least steady
@@ -198,6 +250,7 @@ public class PigpioGpio {
 	 * @return 0 if OK, otherwise PI_BAD_USER_GPIO, or PI_BAD_FILTER
 	 */
 	public static native int glitchFilter(int gpio, int steadyMs);
+	
 	/**
 	 * Starts a hardware clock on a GPIO at the specified frequency. Frequencies above 30MHz are unlikely to work.
 	 * The same clock is available on multiple GPIO. The latest frequency setting will be used by all GPIO which share a clock.
@@ -219,6 +272,7 @@ public class PigpioGpio {
 	 * @return 0 if OK, otherwise PI_BAD_GPIO, PI_NOT_HCLK_GPIO, PI_BAD_HCLK_FREQ,or PI_BAD_HCLK_PASS
 	 */
 	public static native int hardwareClock(int gpio, int clockFreq);
+	
 	/**
 	 * Starts hardware PWM on a GPIO at the specified frequency and dutycycle.
 	 * Frequencies above 30MHz are unlikely to work.

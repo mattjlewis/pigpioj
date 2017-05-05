@@ -1,4 +1,4 @@
-package com.diozero.pigpioj.test;
+package uk.pigpioj.test;
 
 /*
  * #%L
@@ -29,7 +29,8 @@ package com.diozero.pigpioj.test;
 
 import java.io.IOException;
 
-import com.diozero.pigpioj.PigpioGpio;
+import uk.pigpioj.PigpioConstants;
+import uk.pigpioj.PigpioGpio;
 
 public class PigpioPerfTest {
 	private static final int DEFAULT_ITERATIONS = 5_000_000;
@@ -50,7 +51,7 @@ public class PigpioPerfTest {
 				throw new IOException("Error in PigpioGpio.initialise()");
 			}
 			
-			int rc = PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_OUTPUT);
+			int rc = PigpioGpio.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
 			if (rc < 0) {
 				throw new IOException("Error in PigpioGpio.setMode()");
 			}

@@ -1,10 +1,6 @@
-package com.diozero.pigpioj;
+package uk.pigpioj;
 
 public class PigpioBitBangI2C {
-	static {
-		PigpioJ.init();
-	}
-	
 	/**
 	 * <p>This function selects a pair of GPIO for bit banging I2C at a specified baud rate.
 	 * Bit banging I2C allows for certain operations which are not possible with the standard I2C driver.</p>
@@ -31,17 +27,16 @@ public class PigpioBitBangI2C {
 	
 	/**
 	 * <p>This function executes a sequence of bit banged I2C operations. The operations to be performed are specified by the contents of inBuf which contains the concatenated command codes and associated data.</p>
-	 * <p></p>
 	 * <p>The address, read, and write commands take a parameter P. Normally P is one byte (0-255). If the command is preceded by the Escape command then P is two bytes (0-65535, least significant byte first).</p>
 	 * <p>The following command codes are supported: </p>
 	 * <pre>
-	 * Name     Cmd & Data  Meaning
+	 * Name     Cmd &amp; Data  Meaning
 	 * End      0           No more commands
 	 * Escape   1           Next P is two bytes
 	 * Start    2           Start condition
 	 * Stop     3           Stop condition
 	 * Address  4 P         Set I2C address to P
-	 * Flags    5 lsb msb   Set I2C flags to lsb + (msb << 8)
+	 * Flags    5 lsb msb   Set I2C flags to lsb + (msb &lt;&lt; 8)
 	 * Read     6 P         Read P bytes of data
 	 * Write    7 P ...     Write P bytes of data
 	 * </pre>

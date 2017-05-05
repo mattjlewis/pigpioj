@@ -1,4 +1,4 @@
-package com.diozero.pigpioj;
+package uk.pigpioj;
 
 /*
  * #%L

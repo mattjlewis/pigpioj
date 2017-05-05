@@ -1,4 +1,4 @@
-package com.diozero.pigpioj.test;
+package uk.pigpioj.test;
 
 /*
  * #%L
@@ -29,18 +29,11 @@ package com.diozero.pigpioj.test;
 
 import java.io.IOException;
 
-import com.diozero.pigpioj.PigpioCallback;
-import com.diozero.pigpioj.PigpioGpio;
+import uk.pigpioj.PigpioCallback;
+import uk.pigpioj.PigpioConstants;
+import uk.pigpioj.PigpioGpio;
 
 public class PigpioInputTest implements PigpioCallback {
-	public static final int RISING_EDGE = 0;
-	public static final int FALLING_EDGE = 1;
-	public static final int EITHER_EDGE = 2;
-	
-	public static final int PI_PUD_OFF = 0;
-	public static final int PI_PUD_DOWN = 1;
-	public static final int PI_PUD_UP = 2;
-
 	public static void main(String[] args) {
 		int pin = 12;
 		int timeout = -1;
@@ -52,22 +45,22 @@ public class PigpioInputTest implements PigpioCallback {
 				throw new IOException("Error in PigpioGpio.initialise()");
 			}
 			
-			int rc = PigpioGpio.setMode(pin, PigpioGpio.MODE_PI_INPUT);
+			int rc = PigpioGpio.setMode(pin, PigpioConstants.MODE_PI_INPUT);
 			if (rc < 0) {
 				throw new IOException("Error in PigpioGpio.setMode()");
 			}
-			rc = PigpioGpio.setPullUpDown(pin, PI_PUD_UP);
+			rc = PigpioGpio.setPullUpDown(pin, PigpioConstants.PI_PUD_UP);
 			if (rc < 0) {
 				throw new IOException("Error in PigpioGpio.setPullUpDown()");
 			}
-			rc = PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, new PigpioInputTest());
+			rc = PigpioGpio.setISRFunc(pin, PigpioConstants.EITHER_EDGE, timeout, new PigpioInputTest());
 			if (rc < 0) {
 				throw new IOException("Error in PigpioGpio.setISRFunc()");
 			}
 			System.out.println("Sleeping for " + delay_s + "s");
 			Thread.sleep(delay_s*1000);
 			
-			rc = PigpioGpio.setISRFunc(pin, EITHER_EDGE, timeout, null);
+			rc = PigpioGpio.setISRFunc(pin, PigpioConstants.EITHER_EDGE, timeout, null);
 			if (rc < 0) {
 				throw new IOException("Error in PigpioGpio.setISRFunc()");
 			}
