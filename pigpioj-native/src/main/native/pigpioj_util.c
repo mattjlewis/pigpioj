@@ -35,10 +35,3 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* jvm, void* reserved) {
 
 	return JNI_VERSION_1_8;
 }
-
-/* This function is called when the native library gets unloaded by the VM. */
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* jvm, void* reserved) {
-	printf("JNI_OnUnLoad()\n");
-	gpioTerminate();
-	globalJavaVM = NULL;
-}

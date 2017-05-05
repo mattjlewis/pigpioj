@@ -12,12 +12,17 @@ INCLUDE	     = -I. \
 
 CFLAGS      := -O3 -Wall -pthread -fPIC $(INCLUDE)
 
-LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic -lrt
+#LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic -lrt
+LIBS         =  -lpigpio -lrt
 
 # Should not alter anything below this line
 ###############################################################################
 
-SRC	=   pigpioj_util.c com_diozero_pigpioj_PigpioGpio.c com_diozero_pigpioj_PigpioI2C.c com_diozero_pigpioj_PigpioSPI.c com_diozero_pigpioj_PigpioBitBangI2C.c
+SRC	=   pigpioj_util.c \
+	uk_pigpioj_PigpioGpio.c \
+	uk_pigpioj_PigpioI2C.c \
+	uk_pigpioj_PigpioSPI.c \
+	uk_pigpioj_PigpioBitBangI2C.c
 
 OBJ =	$(SRC:.c=.o)
 
