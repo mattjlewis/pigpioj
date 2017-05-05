@@ -11,7 +11,7 @@ public class PigpioJNI implements PigpioInterface {
 	private static boolean loaded;
 	
 	public static synchronized int initialise() {
-		if (!loaded) {
+		if (! loaded) {
 			@SuppressWarnings("resource")
 			InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + LIB_NAME + ".so");
 			if (is != null) {
@@ -32,21 +32,25 @@ public class PigpioJNI implements PigpioInterface {
 				try {
 					System.loadLibrary(LIB_NAME);
 					loaded = true;
-					
-					return PigpioGpio.initialise();
 				} catch (Throwable t) {
 					System.err.println("Error loading pigpioj library from system library path: " + t);
 					t.printStackTrace();
 				}
 			}
+			
+			if (loaded) {
+				int rc = PigpioGpio.initialise();
+				return rc;
+			}
 		}
 		
-		return PigpioConstants.ERROR;
+		return loaded ? PigpioConstants.SUCCESS : PigpioConstants.ERROR;
 	}
 	
 	public PigpioJNI() {
-		if (initialise() < 0) {
-			throw new RuntimeException("Error initialising pigpio");
+		int rc = initialise();
+		if (rc < 0) {
+			throw new RuntimeException("Error initialising pigpio: " + rc);
 		}
 	}
 	
