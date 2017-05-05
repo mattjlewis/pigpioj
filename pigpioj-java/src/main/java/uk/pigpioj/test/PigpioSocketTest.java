@@ -1,12 +1,25 @@
 package uk.pigpioj.test;
 
+import uk.pigpioj.PigpioCallback;
 import uk.pigpioj.PigpioConstants;
 import uk.pigpioj.PigpioSocket;
 
-public class PigpioSocketTest {
+public class PigpioSocketTest implements PigpioCallback {
 	public static void main(String[] args) {
+		new PigpioSocketTest().run("shirley.home", 8888);
+	}
+	
+	private static void sleep(int i) {
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			// Ignore
+		}
+	}
+	
+	public void run(String hostname, int port) {
 		try (PigpioSocket pigpiod = new PigpioSocket()) {
-			pigpiod.connect("shirley.home", 8888);
+			pigpiod.connect(hostname, port);
 			
 			int delay = 500;
 			int small_delay = 20;
@@ -38,6 +51,10 @@ public class PigpioSocketTest {
 			mode = pigpiod.getMode(gpio);
 			System.out.println("getMode(" + gpio + "): " + mode);
 			
+			if (pigpiod.enableListener(gpio, PigpioConstants.EITHER_EDGE, this) < 0) {
+				System.out.println("Error in enableListener");
+			}
+			
 			int level;
 			for (int i=0; i<blink_iterations; i++) {
 				System.out.println("On");
@@ -65,8 +82,13 @@ public class PigpioSocketTest {
 			System.out.println("real_range: " + real_range);
 			int pwm_range = pigpiod.getPWMRange(gpio);
 			System.out.println("pwm_range: " + pwm_range);
-			if (pigpiod.setPWMRange(gpio, real_range) < 0) {
+			int range = 4000;
+			if (pigpiod.setPWMRange(gpio, range) < 0) {
 				System.out.println("Error in setPWMRange()");
+			}
+			
+			if (pigpiod.disableListener(gpio) < 0) {
+				System.out.println("Error in disableListener");
 			}
 			
 			for (float f=0; f<=1; f+=0.02) {
@@ -75,24 +97,23 @@ public class PigpioSocketTest {
 				}
 				sleep(small_delay);
 			}
-			
+			System.out.println("PWM now fully on");
 			for (float f=1; f>=0; f-=0.02) {
 				if (pigpiod.setPWMDutyCycle(gpio, Math.round(f * real_range)) < 0) {
 					System.out.println("Error in setPWMDutyCycle");
 				}
 				sleep(small_delay);
 			}
+			System.out.println("Finished");
 		} catch (InterruptedException e) {
 			System.err.println("Interrupted: " + e);
 			e.printStackTrace(System.err);
 		}
 	}
-	
-	private static void sleep(int i) {
-		try {
-			Thread.sleep(i);
-		} catch (InterruptedException e) {
-			// Ignore
-		}
+
+	@Override
+	public void callback(int pin, boolean value, long epochTime, long nanoTime) {
+		System.out.format("Got callback %d, %b, %d, %d%n", Integer.valueOf(pin), Boolean.valueOf(value),
+				Long.valueOf(epochTime), Long.valueOf(nanoTime));
 	}
 }
