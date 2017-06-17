@@ -59,7 +59,7 @@ public class PigpioI2C {
 	
 	/**
 	 * This sends a single bit (in the Rd/Wr bit) to the device associated with handle.
-	 * @param handle >=0, as returned by a call to i2cOpen
+	 * @param handle &gt;=0, as returned by a call to i2cOpen
 	 * @param bit 0-1, the value to write
 	 * @return 0 if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or PI_I2C_WRITE_FAILED
 	 */
