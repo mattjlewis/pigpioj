@@ -178,6 +178,11 @@ public class PigpioJNI implements PigpioInterface {
 	public int i2cClose(int handle) {
 		return PigpioI2C.i2cClose(handle);
 	}
+	
+	@Override
+	public int i2cWriteQuick(int handle, int bit) {
+		return PigpioI2C.i2cWriteQuick(handle, bit);
+	}
 
 	@Override
 	public int i2cReadByte(int handle) {

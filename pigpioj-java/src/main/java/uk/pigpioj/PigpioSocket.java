@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -28,18 +29,30 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_NTFY_FLAGS_EVENT = 1 << 7;
 	
 	// Commands
-	private static final int PI_CMD_MODES = 0;		// gpio mode 0 - (GPIO mode set)
-	private static final int PI_CMD_MODEG = 1;		// gpio 0 0 - (GPIO mode get)
-	private static final int PI_CMD_PUD = 2;		// gpio pud 0 - (GPIO set pull up/down)
-	private static final int PI_CMD_READ = 3;		// gpio 0 0 - (GPIO read)
-	private static final int PI_CMD_WRITE = 4;		// gpio level 0 - (GPIO write)
-	private static final int PI_CMD_PWM = 5;		// gpio dutycycle 0 - (PWM set duty cycle)
-	private static final int PI_CMD_PRS = 6;		// gpio range 0 - (PWM set range)
-	private static final int PI_CMD_PFS = 7;		// gpio frequency 0 - (PWM set frequency)
-	private static final int PI_CMD_SERVO = 8;		// gpio pulsewidth 0 - (Servo set pulse width)
-	private static final int PI_CMD_WDOG = 9;		// gpio timeout 0 - (?)
-	private static final int PI_CMD_BR1 = 10;		// 0 0 0 - (Read GPIO bank 1, i.e. GPIOs 0-31)
-	private static final int PI_CMD_BR2 = 11;		// 0 0 0 - (Read GPIO bank 2, i.e. GPIOs 32-63)
+	/** GPIO mode set<br>Request: <code>gpio mode 0</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_MODES = 0;
+	/** GPIO mode get<br>Request: <code>gpio 0 0 -</code><br>Response: <code>- - mode -</code> */
+	private static final int PI_CMD_MODEG = 1;
+	/** GPIO set pull up/down<br>Request: <code>gpio pud 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_PUD = 2;
+	/** GPIO read<br>Request: <code>gpio 0 0 =</code><br>Response: <code>- - level -</code> */
+	private static final int PI_CMD_READ = 3;
+	/** GPIO write<br>Response: <code>gpio level 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_WRITE = 4;
+	/** PWM set duty cycle<br>Request: <code>gpio dutycycle 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_PWM = 5;
+	/** PWM set range<br>Request: <code>gpio range 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_PRS = 6;
+	/** PWM set frequency<br>Request: <code>gpio frequency 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_PFS = 7;
+	/** Servo set pulse width<br>Request: <code>gpio pulsewidth 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_SERVO = 8;
+	/** Set GPIO watchdog<br>Request: <code>gpio timeout 0 -</code><br>Response: <code>- - 0 -</code> */
+	private static final int PI_CMD_WDOG = 9;
+	/** Read GPIO bank 1, i.e. GPIOs 0-31<br>Request: <code>0 0 0 -</code><br>Response: <code>- - bits -</code> */
+	private static final int PI_CMD_BR1 = 10;
+	/** Read GPIO bank 2, i.e. GPIOs 32-63<br>Request: <code>0 0 0 -</code><br>Response: <code>- - bits -</code> */
+	private static final int PI_CMD_BR2 = 11;
 	private static final int PI_CMD_BC1 = 12;		// bits 0 0 - (Clear GPIO bank 1)
 	private static final int PI_CMD_BC2 = 13;		// bits 0 0 - (Clear GPIO bank 2)
 	private static final int PI_CMD_BS1 = 14;		// bits 0 0 - (Set GPIO bank 1)
@@ -73,7 +86,8 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_SLRO = 42;		// gpio baud 4 uint32_t databits
 	private static final int PI_CMD_SLR = 43;		// gpio count 0 -
 	private static final int PI_CMD_SLRC = 44;		// gpio 0 0 -
-	private static final int PI_CMD_PROCP = 45;		// script_id 0 0 -
+	/** Get script status<br>Request: <code>script_id 0 0 -</code><br>Response: <code>- - X+4 uint32_t status; uint8_t data[X]</code> */
+	private static final int PI_CMD_PROCP = 45;		// 
 	private static final int PI_CMD_MICS = 46;		// micros 0 0 -
 	private static final int PI_CMD_MILS = 47;		// millis 0 0 -
 	private static final int PI_CMD_PARSE = 48;		// N/A N/A N/A N/A
@@ -155,8 +169,8 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_NOIB = 99;		// 0 0 0 - (Notify Open In Band)
 	private static final int PI_CMD_WVTXM = 100;	// wave_id mode 0 -
 	private static final int PI_CMD_WVTAT	= 101;	// - - 0 -
-	private static final int PADS = 102;			// pad strength 0 -
-	private static final int PADG = 103;			// pad 0 0 -
+	private static final int PI_CMD_PADS = 102;		// pad strength 0 -
+	private static final int PI_CMD_PADG = 103;		// pad 0 0 -
 	private static final int PI_CMD_FO = 104;		// mode 0 X uint8_t file[X]
 	private static final int PI_CMD_FC = 105;		// handle 0 0 - (File close)
 	private static final int PI_CMD_FR = 106;		// handle count 0 -
@@ -167,7 +181,8 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_BSPIC = 111;	// CS 0 0 -
 	private static final int PI_CMD_BSPIO = 112;	// CS 0 20 uint32_t MISO uint32_t MOSI uint32_t SCLK uint32_t baud uint32_t spi_flags
 	private static final int PI_CMD_BSPIX = 113;	// CS 0 X uint8_t data[X]
-	private static final int PI_CMD_BSCX = 114;		// control 0 X uint8_t data[X]
+	/** I2C/SPI as slave transfer<br>Request: <code>control 0 X uint8_t data[X]</code><br>Response: <code>- - X+4 uint32_t status; uint8_t data[X]</code> */
+	private static final int PI_CMD_BSCX = 114;
 	private static final int PI_CMD_EVM = 115;		// handle bits 0 - (Event Monitor)
 	private static final int PI_CMD_EVT = 116;		// event 0 0 - (Event Trigger)
 
@@ -223,28 +238,24 @@ public class PigpioSocket implements PigpioInterface {
 	public void connect(String host, int port) throws InterruptedException {
 		workerGroup = new NioEventLoopGroup();
 		
+		ResponseHandler rh = new ResponseHandler(PigpioSocket.this::messageReceived);
+		
 		Bootstrap b1 = new Bootstrap();
-		b1.group(workerGroup)
-			.channel(NioSocketChannel.class)
-			.handler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				public void initChannel(SocketChannel ch) throws Exception {
-						ch.pipeline().addLast(new ResponseDecoder(), new MessageEncoder(),
-								new ResponseHandler(PigpioSocket.this::messageReceived));
-					}
-			});
+		b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
+			@Override
+			public void initChannel(SocketChannel ch) throws Exception {
+				ch.pipeline().addLast(new ResponseDecoder(), new MessageEncoder(), rh);
+			}
+		});
 
 		Bootstrap b2 = new Bootstrap();
-		b2.group(workerGroup)
-			.channel(NioSocketChannel.class)
-			.handler(new ChannelInitializer<SocketChannel>() {
-					@Override
-					public void initChannel(SocketChannel ch) throws Exception {
-							ch.pipeline().addLast(new NotificationDecoder(), new MessageEncoder(),
-									new ResponseHandler(PigpioSocket.this::messageReceived),
-									new NotificationHandler(PigpioSocket.this::notificationReceived));
-						}
-				});
+		b2.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
+			@Override
+			public void initChannel(SocketChannel ch) throws Exception {
+				ch.pipeline().addLast(new NotificationDecoder(), new MessageEncoder(), rh,
+						new NotificationHandler(PigpioSocket.this::notificationReceived));
+			}
+		});
 		
 		// Connect
 		messageChannel = b1.connect(host, port).sync().channel();
@@ -281,6 +292,8 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	void messageReceived(ResponseMessage msg) {
+		System.out.println("messageReceived(" + msg + ")");
+		
 		// A hack as the notification handle is sent via a the notification
 		// channel which has a different message structure
 		if (msg.cmd == PI_CMD_NOIB) {
@@ -298,15 +311,13 @@ public class PigpioSocket implements PigpioInterface {
 	}
 	
 	void notificationReceived(NotificationMessage msg) {
-		long nano_time = System.nanoTime();
-		long epoch_time = System.currentTimeMillis();
 		if (msg.flags == 0) {
 			int changed_level_mask = lastGpioLevelMask ^ msg.level;
 			System.out.println("changed_level_mask: " + changed_level_mask);
 			lastGpioLevelMask = msg.level;
 			callbacks.entrySet().stream().filter(entry -> (1 << entry.getKey().intValue() & changed_level_mask) != 0)
 					.forEach(entry -> entry.getValue().callback(entry.getKey().intValue(),
-							(1 << entry.getKey().intValue() & msg.level) != 0, epoch_time, nano_time));
+							(1 << entry.getKey().intValue() & msg.level) != 0, msg.epochTime, msg.nanoTime));
 		} else {
 			if ((msg.flags & PI_NTFY_FLAGS_WDOG) != 0) {
 				System.out.println("WDOG notification message: " + msg);
@@ -320,19 +331,22 @@ public class PigpioSocket implements PigpioInterface {
 		}
 	}
 	
-	private ResponseMessage waitForMessage(int command) {
-		ResponseMessage message = null;
+	private synchronized ResponseMessage sendMessage(Message message) {
+		ResponseMessage rm = null;
+		
 		lock.lock();
 		try {
+			lastWriteFuture = messageChannel.writeAndFlush(message);
+			
 			if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-				message = messageQueue.pop();
+				rm = messageQueue.pop();
 				
-				if (message.cmd != command) {
-					System.err.println("Unexpected message: " + message + ". Was expecting " + command);
+				if (rm.cmd != message.cmd) {
+					System.err.println("Unexpected response: " + rm + ". Was expecting " + message.cmd);
 					message = null;
 				}
 			} else {
-				System.err.println("Timeout waiting for response to command " + command);
+				System.err.println("Timeout waiting for response to command " + message.cmd);
 			}
 		} catch (InterruptedException e) {
 			System.err.println("Interrupted: " + e);
@@ -340,12 +354,7 @@ public class PigpioSocket implements PigpioInterface {
 			lock.unlock();
 		}
 		
-		return message;
-	}
-	
-	private synchronized ResponseMessage sendMessage(Message message) {
-		lastWriteFuture = messageChannel.writeAndFlush(message);
-		return waitForMessage(message.cmd);
+		return rm;
 	}
 	
 	@Override
@@ -593,6 +602,16 @@ public class PigpioSocket implements PigpioInterface {
 	@Override
 	public int i2cClose(int handle) {
 		ResponseMessage message = sendMessage(new Message(PI_CMD_I2CC, handle, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int i2cWriteQuick(int handle, int bit) {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_I2CWQ, handle, bit));
 		if (message == null) {
 			return PigpioConstants.ERROR;
 		}
@@ -876,6 +895,30 @@ public class PigpioSocket implements PigpioInterface {
 		}
 	}
 	
+	static class ScriptStatusResponseMessage extends ResponseMessage {
+		long status;
+		long[] pars;
+		
+		public ScriptStatusResponseMessage(int cmd, long p1, long p2, long res, long status, long[] pars) {
+			super(cmd, p1, p2, res);
+			
+			this.status = status;
+			this.pars = pars;
+		}
+	}
+	
+	static class BscXferResponseMessage extends ResponseMessage {
+		long status;
+		byte[] data;
+		
+		public BscXferResponseMessage(int cmd, long p1, long p2, long res, long status, byte[] data) {
+			super(cmd, p1, p2, res);
+			
+			this.status = status;
+			this.data = data;
+		}
+	}
+	
 	static abstract class MessageExtension {
 		int numBytes;
 		
@@ -955,18 +998,23 @@ public class PigpioSocket implements PigpioInterface {
 		short flags;	// unsigned short (bit mask)
 		long tick;		// Number of microseconds since system boot (unsigned int)
 		int level;		// Bit mask indicating the level of all GPIOs (unsigned int)
+		long epochTime;
+		long nanoTime;
 		
-		public NotificationMessage(int seq, short flags, long tick, int level) {
+		public NotificationMessage(int seq, short flags, long tick, int level, long epochTime, long nanoTime) {
 			this.seq = seq;
 			this.flags = flags;
 			this.tick = tick;
 			this.level = level;
+			this.epochTime = epochTime;
+			this.nanoTime = nanoTime;
 		}
 
 		@Override
 		public String toString() {
-			return "NotificationMessage [seq=" + seq + ", flags=" + flags + ", tick=" + tick + ", level=0x"
-					+ Integer.toHexString(level) + "]";
+			return "NotificationMessage [seq=" + seq + ", flags=0x" + Integer.toHexString(flags) + ", tick=" + tick
+					+ ", level=0x" + Integer.toHexString(level) + ", epochTime=" + epochTime + ", nanoTime=" + nanoTime
+					+ "]";
 		}
 	}
 	
@@ -1026,6 +1074,28 @@ public class PigpioSocket implements PigpioInterface {
 					message = new ByteArrayResponseMessage(cmd, p1, p2, res, data);
 				}
 				break;
+			case PI_CMD_PROCP:
+				if (buf.readableBytes() < res) {
+					buf.resetReaderIndex();
+				} else {
+					long status = buf.readUnsignedIntLE();
+					long[] pars = new long[(int) ((res - 4) / 4)];
+					for (int i=0; i<pars.length; i++) {
+						pars[i] = buf.readUnsignedIntLE();
+					}
+					message = new ScriptStatusResponseMessage(cmd, p1, p2, res, status, pars);
+				}
+				break;
+			case PI_CMD_BSCX:
+				if (buf.readableBytes() < res) {
+					buf.resetReaderIndex();
+				} else {
+					long status = buf.readUnsignedIntLE();
+					byte[] data = new byte[(int) (res - 4)];
+					buf.readBytes(data);
+					message = new BscXferResponseMessage(cmd, p1, p2, res, status, data);
+				}
+				break;
 			default:
 				message = new ResponseMessage(cmd, p1, p2, res);
 			}
@@ -1063,6 +1133,9 @@ public class PigpioSocket implements PigpioInterface {
 		
 		@Override
 		protected void decode(ChannelHandlerContext context, ByteBuf in, List<Object> out) {
+			long nano_time = System.nanoTime();
+			long epoch_time = System.currentTimeMillis();
+			
 			if (! notificationHandleSet) {
 				if (in.readableBytes() < 4 * 4) {
 					return;
@@ -1078,10 +1151,12 @@ public class PigpioSocket implements PigpioInterface {
 				return;
 			}
 			
-			out.add(new NotificationMessage(in.readUnsignedShortLE(), in.readShortLE(), in.readUnsignedIntLE(), in.readIntLE()));
+			out.add(new NotificationMessage(in.readUnsignedShortLE(), in.readShortLE(), in.readUnsignedIntLE(),
+					in.readIntLE(), epoch_time, nano_time));
 		}
 	}
 	
+	@Sharable
 	static class ResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
 		private MessageListener<ResponseMessage> listener;
 		

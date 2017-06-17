@@ -25,6 +25,14 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cClose
 
 /*
  * Class:     uk_pigpioj_PigpioI2C
+ * Method:    i2cWriteQuick
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cWriteQuick
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     uk_pigpioj_PigpioI2C
  * Method:    i2cReadByte
  * Signature: (I)I
  */

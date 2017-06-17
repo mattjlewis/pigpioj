@@ -31,10 +31,27 @@ public interface PigpioI2CInterface {
 	 */
 	int i2cClose(int handle);
 	
-	/* This reads a single byte from the device associated with handle */
+	/**
+	 * This sends a single bit (in the Rd/Wr bit) to the device associated with handle.
+	 * @param handle >=0, as returned by a call to i2cOpen
+	 * @param bit 0-1, the value to write
+	 * @return 0 if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or PI_I2C_WRITE_FAILED
+	 */
+	int i2cWriteQuick(int handle, int bit);
+	
+	/**
+	 * This reads a single byte from the device associated with handle
+	 * @param handle >=0, as returned by a call to i2cOpen
+	 * @return the byte read (>=0) if OK, otherwise PI_BAD_HANDLE, or PI_I2C_READ_FAILED. 
+	 */
 	int i2cReadByte(int handle);
 	
-	/* This sends a single byte to the device associated with handle */
+	/**
+	 * This sends a single byte to the device associated with handle.
+	 * @param handle >=0, as returned by a call to i2cOpen
+	 * @param bVal 0-0xFF, the value to write
+	 * @return 0 if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or PI_I2C_WRITE_FAILED.
+	 */
 	int i2cWriteByte(int handle, int bVal);
 	
 	/* This reads a single byte from the specified register of the device associated with handle */
