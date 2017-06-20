@@ -802,9 +802,9 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	@Override
-	public int spiWrite(int handle, byte[] buf, int count) {
+	public int spiWrite(int handle, byte[] buffer, int offset, int length) {
 		ResponseMessage message = sendMessage(
-				new Message(PI_CMD_SPIW, handle, 0, new ByteArrayMessageExtension(count, buf)));
+				new Message(PI_CMD_SPIW, handle, 0, new ByteArrayMessageExtension(offset, length, buffer)));
 		if (message == null) {
 			return PigpioConstants.ERROR;
 		}
@@ -815,7 +815,7 @@ public class PigpioSocket implements PigpioInterface {
 	@Override
 	public int spiXfer(int handle, byte[] txBuf, byte[] rxBuf, int count) {
 		ResponseMessage message = sendMessage(
-				new Message(PI_CMD_SPIX, handle, 0, new ByteArrayMessageExtension(txBuf)));
+				new Message(PI_CMD_SPIX, handle, 0, new ByteArrayMessageExtension(count, txBuf)));
 		if (message == null) {
 			return PigpioConstants.ERROR;
 		}
@@ -970,21 +970,27 @@ public class PigpioSocket implements PigpioInterface {
 	}
 	
 	static class ByteArrayMessageExtension extends MessageExtension {
+		private int offset;
 		byte[] data;
 
 		public ByteArrayMessageExtension(byte[] data) {
-			this(data.length, data);
+			this(0, data.length, data);
 		}
 		
-		public ByteArrayMessageExtension(int count, byte[] data) {
-			super(count);
+		public ByteArrayMessageExtension(int length, byte[] data) {
+			this(0, length, data);
+		}
+		
+		public ByteArrayMessageExtension(int offset, int length, byte[] data) {
+			super(length);
 			
+			this.offset = offset;
 			this.data = data;
 		}
 
 		@Override
 		public void encode(ByteBuf out) {
-			out.writeBytes(data, 0, numBytes);
+			out.writeBytes(data, offset, numBytes);
 		}
 
 		@Override

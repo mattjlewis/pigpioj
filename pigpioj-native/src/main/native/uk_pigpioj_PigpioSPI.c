@@ -40,13 +40,13 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioSPI_spiRead
 /*
  * Class:     uk_pigpioj_PigpioSPI
  * Method:    spiWrite
- * Signature: (I[BI)I
+ * Signature: (I[BII)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioSPI_spiWrite
-  (JNIEnv* env, jclass clz, jint handle, jbyteArray buf, jint count) {
+  (JNIEnv* env, jclass clz, jint handle, jbyteArray buf, jint offset, jint length) {
 	jboolean is_copy;
 	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
-	int bytes_written = spiWrite(handle, (char*)b, count);
+	int bytes_written = spiWrite(handle, (char*) &b[offset], length);
 	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
 	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
 	return bytes_written;

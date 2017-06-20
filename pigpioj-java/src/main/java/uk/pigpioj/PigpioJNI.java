@@ -265,8 +265,8 @@ public class PigpioJNI implements PigpioInterface {
 	}
 
 	@Override
-	public int spiWrite(int handle, byte[] buf, int count) {
-		return PigpioSPI.spiWrite(handle, buf, count);
+	public int spiWrite(int handle, byte[] buf, int offset, int length) {
+		return PigpioSPI.spiWrite(handle, buf, offset, length);
 	}
 
 	@Override

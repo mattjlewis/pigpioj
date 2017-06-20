@@ -85,10 +85,11 @@ public class PigpioSPI {
 	 * This function writes count bytes of data from buf to the SPI device associated with the handle
 	 * @param handle File descriptor from {@link uk.pigpioj.PigpioSPI#spiOpen spiOpen}
 	 * @param buf Buffer for the data to write
-	 * @param count Number of bytes to write
+	 * @param offset Array offset
+	 * @param length Number of bytes to write
 	 * @return Returns the number of bytes transferred if OK
 	 */
-	public static native int spiWrite(int handle, byte[] buf, int count);
+	public static native int spiWrite(int handle, byte[] buf, int offset, int length);
 	
 	/**
 	 * This function transfers count bytes of data from txBuf to the SPI device associated

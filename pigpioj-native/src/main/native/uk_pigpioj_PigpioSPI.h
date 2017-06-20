@@ -34,10 +34,10 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioSPI_spiRead
 /*
  * Class:     uk_pigpioj_PigpioSPI
  * Method:    spiWrite
- * Signature: (I[BI)I
+ * Signature: (I[BII)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioSPI_spiWrite
-  (JNIEnv *, jclass, jint, jbyteArray, jint);
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jint);
 
 /*
  * Class:     uk_pigpioj_PigpioSPI
