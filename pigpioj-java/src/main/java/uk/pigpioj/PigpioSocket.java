@@ -18,7 +18,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
 public class PigpioSocket implements PigpioInterface {
-	private static final int DEFAULT_TIMEOUT_MS = 500;
+	private static final int DEFAULT_TIMEOUT_MS = 2000;
 	private static final int NOTIFICATION_HANDLE_NOT_SET = -1;
 
 	static final int DEFAULT_PORT = 8888;
@@ -292,7 +292,7 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	void messageReceived(ResponseMessage msg) {
-		System.out.println("messageReceived(" + msg + ")");
+		//System.out.println("messageReceived(" + msg + ")");
 		
 		// A hack as the notification handle is sent via a the notification
 		// channel which has a different message structure
