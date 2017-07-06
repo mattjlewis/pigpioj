@@ -30,7 +30,8 @@ package uk.pigpioj.test;
 import java.io.IOException;
 
 import uk.pigpioj.PigpioConstants;
-import uk.pigpioj.PigpioGpio;
+import uk.pigpioj.PigpioInterface;
+import uk.pigpioj.PigpioJ;
 
 public class PigpioPerfTest {
 	private static final int DEFAULT_ITERATIONS = 5_000_000;
@@ -44,23 +45,23 @@ public class PigpioPerfTest {
 		final int pin = Integer.parseInt(args[0]);
 		final int iterations = args.length > 1 ? Integer.parseInt(args[1]) : DEFAULT_ITERATIONS;
 		
-		try {
-			int version = PigpioGpio.initialise();
+		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {
-				throw new IOException("Error in PigpioGpio.initialise()");
+				throw new IOException("Error in pigpio_impl.getVersion()");
 			}
 			
-			int rc = PigpioGpio.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
+			int rc = pigpio_impl.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setMode()");
+				throw new IOException("Error in pigpio_impl.setMode()");
 			}
 
 			for (int j=0; j<5; j++) {
 				long start_nano = System.nanoTime();
 				for (int i=0; i<iterations; i++) {
-					PigpioGpio.write(pin, true);
-					PigpioGpio.write(pin, false);
+					pigpio_impl.write(pin, true);
+					pigpio_impl.write(pin, false);
 				}
 				long duration_ns = (System.nanoTime() - start_nano);
 				System.out.format("Duration for %d iterations: %.4fs%n",
@@ -69,8 +70,6 @@ public class PigpioPerfTest {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			PigpioGpio.terminate();
 		}
 	}
 }

@@ -6,7 +6,7 @@ import uk.pigpioj.PigpioSocket;
 
 public class PigpioSocketTest implements PigpioCallback {
 	public static void main(String[] args) {
-		new PigpioSocketTest().run("shirley.home", 8888);
+		new PigpioSocketTest().run("raspberry.home", 8888);
 	}
 	
 	private static void sleep(int i) {

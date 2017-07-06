@@ -30,79 +30,80 @@ package uk.pigpioj.test;
 import java.io.IOException;
 
 import uk.pigpioj.PigpioConstants;
-import uk.pigpioj.PigpioGpio;
+import uk.pigpioj.PigpioInterface;
+import uk.pigpioj.PigpioJ;
 
 public class PigpioOutputTest {
 	public static void main(String[] args) {
 		int pin = 18;
-		try {
-			int version = PigpioGpio.initialise();
+		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {
-				throw new IOException("Error in PigpioGpio.initialise()");
+				throw new IOException("Error in pigpio_impl.initialise()");
 			}
 			
-			int rc = PigpioGpio.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
+			int rc = pigpio_impl.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setMode()");
+				throw new IOException("Error in pigpio_impl.setMode()");
 			}
 
 			for (int i=0; i<5; i++) {
 				System.out.println("on");
-				rc = PigpioGpio.write(pin, true);
+				rc = pigpio_impl.write(pin, true);
 				if (rc < 0) {
-					throw new IOException("Error in PigpioGpio.write()");
+					throw new IOException("Error in pigpio_impl.write()");
 				}
 				Thread.sleep(500);
 				
 				System.out.println("off");
-				rc = PigpioGpio.write(pin, false);
+				rc = pigpio_impl.write(pin, false);
 				if (rc < 0) {
-					throw new IOException("Error in PigpioGpio.write()");
+					throw new IOException("Error in pigpio_impl.write()");
 				}
 				Thread.sleep(500);
 			}
 			int pwm_max = 255;
 			
 			System.out.println("pwm full on");
-			rc = PigpioGpio.setPWMDutyCycle(pin, pwm_max);
+			rc = pigpio_impl.setPWMDutyCycle(pin, pwm_max);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm full off");
-			rc = PigpioGpio.setPWMDutyCycle(pin, 0);
+			rc = pigpio_impl.setPWMDutyCycle(pin, 0);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 25% off");
-			rc = PigpioGpio.setPWMDutyCycle(pin, Math.round(pwm_max*.25f));
+			rc = pigpio_impl.setPWMDutyCycle(pin, Math.round(pwm_max*.25f));
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 50%");
-			rc = PigpioGpio.setPWMDutyCycle(pin, Math.round(pwm_max*.50f));
+			rc = pigpio_impl.setPWMDutyCycle(pin, Math.round(pwm_max*.50f));
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm 75%");
-			rc = PigpioGpio.setPWMDutyCycle(pin, Math.round(pwm_max*.75f));
+			rc = pigpio_impl.setPWMDutyCycle(pin, Math.round(pwm_max*.75f));
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 			
 			System.out.println("pwm full off");
-			rc = PigpioGpio.setPWMDutyCycle(pin, 0);
+			rc = pigpio_impl.setPWMDutyCycle(pin, 0);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPWMDutyCycle()");
+				throw new IOException("Error in pigpio_impl.setPWMDutyCycle()");
 			}
 			Thread.sleep(500);
 		} catch (IOException e) {
@@ -111,8 +112,6 @@ public class PigpioOutputTest {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			PigpioGpio.terminate();
 		}
 	}
 }

@@ -31,38 +31,39 @@ import java.io.IOException;
 
 import uk.pigpioj.PigpioCallback;
 import uk.pigpioj.PigpioConstants;
-import uk.pigpioj.PigpioGpio;
+import uk.pigpioj.PigpioInterface;
+import uk.pigpioj.PigpioJ;
 
 public class PigpioInputTest implements PigpioCallback {
 	public static void main(String[] args) {
 		int pin = 12;
-		int timeout = -1;
 		int delay_s = 20;
-		try {
-			int version = PigpioGpio.initialise();
+		
+		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {
-				throw new IOException("Error in PigpioGpio.initialise()");
+				throw new IOException("Error in pigpio_impl.initialise()");
 			}
 			
-			int rc = PigpioGpio.setMode(pin, PigpioConstants.MODE_PI_INPUT);
+			int rc = pigpio_impl.setMode(pin, PigpioConstants.MODE_PI_INPUT);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setMode()");
+				throw new IOException("Error in pigpio_impl.setMode()");
 			}
-			rc = PigpioGpio.setPullUpDown(pin, PigpioConstants.PI_PUD_UP);
+			rc = pigpio_impl.setPullUpDown(pin, PigpioConstants.PI_PUD_UP);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setPullUpDown()");
+				throw new IOException("Error in pigpio_impl.setPullUpDown()");
 			}
-			rc = PigpioGpio.setISRFunc(pin, PigpioConstants.EITHER_EDGE, timeout, new PigpioInputTest());
+			rc = pigpio_impl.enableListener(pin, PigpioConstants.EITHER_EDGE, new PigpioInputTest());
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setISRFunc()");
+				throw new IOException("Error in pigpio_impl.setISRFunc()");
 			}
 			System.out.println("Sleeping for " + delay_s + "s");
 			Thread.sleep(delay_s*1000);
 			
-			rc = PigpioGpio.setISRFunc(pin, PigpioConstants.EITHER_EDGE, timeout, null);
+			rc = pigpio_impl.disableListener(pin);
 			if (rc < 0) {
-				throw new IOException("Error in PigpioGpio.setISRFunc()");
+				throw new IOException("Error in pigpio_impl.setISRFunc()");
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -70,8 +71,6 @@ public class PigpioInputTest implements PigpioCallback {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			PigpioGpio.terminate();
 		}
 	}
 

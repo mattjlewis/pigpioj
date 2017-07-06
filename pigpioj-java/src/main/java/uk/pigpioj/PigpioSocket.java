@@ -238,7 +238,7 @@ public class PigpioSocket implements PigpioInterface {
 	public void connect(String host, int port) throws InterruptedException {
 		workerGroup = new NioEventLoopGroup();
 		
-		ResponseHandler rh = new ResponseHandler(PigpioSocket.this::messageReceived);
+		ResponseHandler rh = new ResponseHandler(this::messageReceived);
 		
 		Bootstrap b1 = new Bootstrap();
 		b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
