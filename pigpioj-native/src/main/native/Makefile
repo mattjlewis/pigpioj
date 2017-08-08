@@ -2,6 +2,9 @@
 #	libpigpioj - Java (JNI) library wrapper of pigpio for the Raspberry Pi
 #
 
+# See this regarding signal chaining: http://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/signals003.html#CIHFCAIG
+# Set LD_PRELOAD=$JAVA_HOME/jre/lib/arm/libjsig.so
+
 TARGET=libpigpioj.so
 
 CC	         = gcc

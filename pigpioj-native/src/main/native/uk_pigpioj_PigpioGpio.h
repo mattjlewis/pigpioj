@@ -137,7 +137,7 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setServoPulseWidth
 /*
  * Class:     uk_pigpioj_PigpioGpio
  * Method:    setISRFunc
- * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)I
+ * Signature: (IIILuk/pigpioj/PigpioCallback;)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setISRFunc
   (JNIEnv* env, jclass clz, jint gpio, jint edge, jint timeout, jobject listener);

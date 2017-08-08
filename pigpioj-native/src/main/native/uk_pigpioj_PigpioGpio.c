@@ -7,12 +7,6 @@
 
 jobject listeners[MAX_GPIO_PINS];
 
-unsigned long long getEpochTime() {
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return (unsigned long long)(tp.tv_sec) * 1000 + (unsigned long long)(tp.tv_usec) / 1000;
-}
-
 void callbackFunction(int gpio, int level, uint32_t tick) {
 	// Attach to the current JVM thread
 	JavaVM* vm = getGlobalJavaVM();
@@ -20,18 +14,10 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	(*vm)->AttachCurrentThread(vm, (void**)&env, NULL);
 
 	// Get the Java nano time as early as possible
-	// TODO Can these class/method references be cached on start-up?
-	jclass clz = (*env)->FindClass(env, "java/lang/System");
-	jlong nano_time = -1;
-	if (clz != NULL) {
-		jmethodID method_id = (*env)->GetStaticMethodID(env, clz, "nanoTime", "()J");
-		if (method_id != NULL) {
-			nano_time = (*env)->CallStaticLongMethod(env, clz, method_id);
-		}
-	}
+	jlong nano_time = getJavaNanoTime();
 
 	// Now get the UNIX epoch time
-	unsigned long long epoch_time = getEpochTime();
+	jlong epoch_time = getEpochTime();
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		fprintf(stderr, "PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);
@@ -60,9 +46,7 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 			fprintf(stderr, "PigpioGpio Native: Error: callbackFunction could not get 'callback' method id [gpio=%d]\n", gpio);
 		} else {
 			// invoke the callback method in the callback interface
-			jlong j_epoch_time = (jlong)epoch_time;
-			jlong j_nano_time = (jlong)nano_time;
-			(*env)->CallVoidMethod(env, listener, callback_method, gpio, level, j_epoch_time, j_nano_time);
+			(*env)->CallVoidMethod(env, listener, callback_method, gpio, level, epoch_time, nano_time);
 		}
 	}
 
@@ -85,9 +69,16 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_initialise
 	int rc = gpioCfgInterfaces(PI_DISABLE_FIFO_IF | PI_DISABLE_SOCK_IF);
 	if (rc < 0) {
 		fprintf(stderr, "Error in gpioCfgInterfaces: %d\n", rc);
+		return -1;
 	}
 
-	return gpioInitialise();
+	rc = gpioInitialise();
+	if (rc < 0) {
+		fprintf(stderr, "Error in gpioInitialise: %d\n", rc);
+		return -1;
+	}
+
+	return rc;
 }
 
 /*
@@ -263,7 +254,7 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setServoPulseWidth
 /*
  * Class:     uk_pigpioj_PigpioGpio
  * Method:    setISRFunc
- * Signature: (IIILorg/diozero/internal/provider/pigpio/impl/PigpioCallback;)I
+ * Signature: (IIILuk/pigpioj/PigpioCallback;)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setISRFunc
   (JNIEnv* env, jclass clz, jint gpio, jint edge, jint timeout, jobject listener) {
