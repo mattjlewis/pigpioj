@@ -1,6 +1,10 @@
 package uk.pigpioj;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -8,8 +12,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -205,7 +214,7 @@ public class PigpioSocket implements PigpioInterface {
 	 * } pigifError_t;
 	 */
 	
-	private Deque<ResponseMessage> messageQueue;
+	private Queue<ResponseMessage> messageQueue;
 	private Lock lock;
 	private Condition condition;
 	private EventLoopGroup workerGroup;
@@ -339,7 +348,7 @@ public class PigpioSocket implements PigpioInterface {
 			lastWriteFuture = messageChannel.writeAndFlush(message);
 			
 			if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-				rm = messageQueue.pop();
+				rm = messageQueue.remove();
 				
 				if (rm.cmd != message.cmd) {
 					System.err.println("Unexpected response: " + rm + ". Was expecting " + message.cmd);
