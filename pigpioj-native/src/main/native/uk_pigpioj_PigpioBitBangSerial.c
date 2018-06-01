@@ -37,6 +37,8 @@ JNIEXPORT jbyteArray JNICALL Java_uk_pigpioj_PigpioBitBangSerial_serialRead
 	jbyteArray result = (*env)->NewByteArray(env, bytes);
 	(*env)->SetByteArrayRegion(env, result, 0, bytes, (jbyte *)buf);
 	
+	free(buf);
+	
 	return result;
 }
 
