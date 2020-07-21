@@ -41,7 +41,7 @@ public interface PigpioWaveformInterface {
 	 * @param baud 50-1000000
 	 * @param dataBits 1-32
 	 * @param stopBits 2-8
-	 * @param offset >=0
+	 * @param offset &gt;= 0
 	 * @param str An array of chars (which may contain nulls)
 	 * @return Returns the new total number of pulses in the current waveform if OK, otherwise PI_BAD_USER_GPIO,
 	 * PI_BAD_WAVE_BAUD, PI_BAD_DATABITS, PI_BAD_STOPBITS, PI_TOO_MANY_CHARS, PI_BAD_SER_OFFSET, or PI_TOO_MANY_PULSES.
@@ -93,7 +93,7 @@ public interface PigpioWaveformInterface {
 	 * - all waves with higher numbered wave ids have been deleted or have been flagged for deletion.
 	 * - a new wave is created which uses exactly the same resources as the current wave (see the C source for gpioWaveCreate for details).
 	 * Wave ids are allocated in order, 0, 1, 2, etc.
-	 * @param waveId >=0, as returned by gpioWaveCreate
+	 * @param waveId &gt;= 0, as returned by gpioWaveCreate
 	 * @return Returns 0 if OK, otherwise PI_BAD_WAVE_ID.
 	 */
 	int gpioWaveDelete(int waveId);
@@ -104,7 +104,7 @@ public interface PigpioWaveformInterface {
 	 * starting the new waveform.
 	 * WARNING: bad things may happen if you delete the previous waveform before it has been synced to the new waveform.
 	 * NOTE: Any hardware PWM started by gpioHardwarePWM will be cancelled.
-	 * @param waveId >=0, as returned by gpioWaveCreate
+	 * @param waveId &gt;= 0, as returned by gpioWaveCreate
 	 * @param waveMode PI_WAVE_MODE_ONE_SHOT, PI_WAVE_MODE_REPEAT, PI_WAVE_MODE_ONE_SHOT_SYNC, PI_WAVE_MODE_REPEAT_SYNC
 	 * @return Returns the number of DMA control blocks in the waveform if OK, otherwise PI_BAD_WAVE_ID, or PI_BAD_WAVE_MODE.
 	 */
@@ -120,7 +120,7 @@ public interface PigpioWaveformInterface {
 	 * Delays between waves may be added with the delay command.
 	 * The following command codes are supported:
 	 * <pre>
-	 * Name          Cmd & Data  Meaning
+	 * Name          Cmd &amp; Data  Meaning
 	 * Loop Start    255 0       Identify start of a wave block
 	 * Loop Repeat   255 1 x y   loop x + y*256 times
 	 * Delay         255 2 x y   delay x + y*256 microseconds
