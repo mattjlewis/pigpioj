@@ -68,10 +68,10 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_BS2 = 15;		// bits 0 0 - (Set GPIO bank 2)
 	private static final int PI_CMD_TICK = 16;		// 0 0 0 - (?)
 	private static final int PI_CMD_HWVER = 17;		// 0 0 0 - (Get Pi Hardware Revision)
-	private static final int PI_CMD_NO = 18;		// 0 0 0 - (Notify Open)
-	private static final int PI_CMD_NB = 19;		// handle bits 0 - (Notify Begin)
-	private static final int PI_CMD_NP = 20;		// handle 0 0 - (Notify Pause)
-	private static final int PI_CMD_NC = 21;		// handle 0 0 - (Notify Close)
+	private static final int PI_CMD_NO = 18;			// 0 0 0 - (Notify Open)
+	private static final int PI_CMD_NB = 19;			// handle bits 0 - (Notify Begin)
+	private static final int PI_CMD_NP = 20;			// handle 0 0 - (Notify Pause)
+	private static final int PI_CMD_NC = 21;			// handle 0 0 - (Notify Close)
 	private static final int PI_CMD_PRG = 22;		// gpio 0 0 - (PWM get range)
 	private static final int PI_CMD_PFG = 23;		// gpio 0 0 - (PWM get frequency)
 	private static final int PI_CMD_PRRG = 24;		// gpio 0 0 - (PWM get real range)
@@ -161,8 +161,8 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_SERDA = 82;		// handle 0 0 -
 	private static final int PI_CMD_GDC = 83;		// gpio 0 0 -
 	private static final int PI_CMD_GPW = 84;		// gpio 0 0 -
-	private static final int PI_CMD_HC = 85;		// gpio frequency 0 -
-	private static final int PI_CMD_HP = 86;		// gpio frequency 4 uint32_t dutycycle
+	private static final int PI_CMD_HC = 85;			// gpio frequency 0 -
+	private static final int PI_CMD_HP = 86;			// gpio frequency 4 uint32_t dutycycle
 	private static final int PI_CMD_CF1 = 87;		// arg1 arg2 X uint8_t argx[X]
 	private static final int PI_CMD_CF2 = 88;		// arg1 retMax X uint8_t argx[X]
 	private static final int PI_CMD_BI2CC = 89;		// sda 0 0 -
@@ -173,10 +173,10 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_SLRI = 94;		// gpio invert 0 -
 	private static final int PI_CMD_CGI = 95;		// 0 0 0 -
 	private static final int PI_CMD_CSI = 96;		// config 0 0 -
-	private static final int PI_CMD_FG = 97;		// gpio steady 0 - (Set glitch filter)
-	private static final int PI_CMD_FN = 98;		// gpio steady 4 uint32_t active (Set noise filter)
+	private static final int PI_CMD_FG = 97;			// gpio steady 0 - (Set glitch filter)
+	private static final int PI_CMD_FN = 98;			// gpio steady 4 uint32_t active (Set noise filter)
 	private static final int PI_CMD_NOIB = 99;		// 0 0 0 - (Notify Open In Band)
-	private static final int PI_CMD_WVTXM = 100;	// wave_id mode 0 -
+	private static final int PI_CMD_WVTXM = 100;		// wave_id mode 0 -
 	private static final int PI_CMD_WVTAT	= 101;	// - - 0 -
 	private static final int PI_CMD_PADS = 102;		// pad strength 0 -
 	private static final int PI_CMD_PADG = 103;		// pad 0 0 -
@@ -186,14 +186,16 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_FW = 107;		// handle 0 X uint8_t data[X]
 	private static final int PI_CMD_FS = 108;		// handle offset 4 uint32_t from
 	private static final int PI_CMD_FL = 109;		// count 0 X uint8_t pattern[X]
-	private static final int PI_CMD_SHELL = 110;	// len(name) 0 len(name)+1+len(string) uint8_t name[len(name)] uint8_t null (0) uint8_t string[len(string)]
-	private static final int PI_CMD_BSPIC = 111;	// CS 0 0 -
-	private static final int PI_CMD_BSPIO = 112;	// CS 0 20 uint32_t MISO uint32_t MOSI uint32_t SCLK uint32_t baud uint32_t spi_flags
-	private static final int PI_CMD_BSPIX = 113;	// CS 0 X uint8_t data[X]
+	private static final int PI_CMD_SHELL = 110;		// len(name) 0 len(name)+1+len(string) uint8_t name[len(name)] uint8_t null (0) uint8_t string[len(string)]
+	private static final int PI_CMD_BSPIC = 111;		// CS 0 0 -
+	private static final int PI_CMD_BSPIO = 112;		// CS 0 20 uint32_t MISO uint32_t MOSI uint32_t SCLK uint32_t baud uint32_t spi_flags
+	private static final int PI_CMD_BSPIX = 113;		// CS 0 X uint8_t data[X]
 	/** I2C/SPI as slave transfer<br>Request: <code>control 0 X uint8_t data[X]</code><br>Response: <code>- - X+4 uint32_t status; uint8_t data[X]</code> */
 	private static final int PI_CMD_BSCX = 114;
 	private static final int PI_CMD_EVM = 115;		// handle bits 0 - (Event Monitor)
 	private static final int PI_CMD_EVT = 116;		// event 0 0 - (Event Trigger)
+	private static final int PI_CMD_PROCU = 117;
+	private static final int PI_CMD_WVCAP = 118;
 
 	/*
 	 * pigpiod_if2 Error Codes
@@ -835,6 +837,222 @@ public class PigpioSocket implements PigpioInterface {
 		return (int) message.res;
 	}
 
+	@Override
+	public int gpioWaveClear() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVCLR, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveAddNew() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVNEW, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveAddGeneric(GpioPulse[] pulses) {
+		// TODO Warning untested!
+		ResponseMessage message = sendMessage(
+				new Message(PI_CMD_WVAG, 0, pulses.length, new GpioPulseArrayMessageExtension(pulses)));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveAddSerial(int userGpio, int baud, int dataBits, int stopBits, int offset, byte[] str) {
+		/*
+		// TODO Create a message extension to carry dataBits, stopBits, offset, str length and str
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVAG, userGpio, baud, new ByteArrayMessageExtension()));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+		*/
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int gpioWaveCreate() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVCRE, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveCreatePad(int pctCB, int pctBOOL, int pctTOOL) {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVCAP, pctCB, pctBOOL, new UIntMessageExtension(pctTOOL)));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveDelete(int waveId) {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVDEL, waveId, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveTxSend(int waveId, int waveMode) {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVTXM, waveId, waveMode));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveChain(byte[] buf) {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVCHA, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveTxAt() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVTAT, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveTxBusy() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVBSY, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveTxStop() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVHLT, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetMicros() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSM, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetHighMicros() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSM, 1, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetMaxMicros() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSM, 2, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetPulses() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSP, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetHighPulses() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSP, 1, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetMaxPulses() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSP, 2, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetCbs() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSC, 0, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetHighCbs() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSC, 1, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
+	@Override
+	public int gpioWaveGetMaxCbs() {
+		ResponseMessage message = sendMessage(new Message(PI_CMD_WVSC, 2, 0));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		
+		return (int) message.res;
+	}
+
 	/*
 	 * typedef struct {
 	 *   uint32_t cmd;
@@ -1005,6 +1223,26 @@ public class PigpioSocket implements PigpioInterface {
 		@Override
 		public String toString() {
 			return "ByteArrayMessageExtension [numBytes=" + numBytes + ", data.length=" + data.length + "]";
+		}
+	}
+	
+	static class GpioPulseArrayMessageExtension extends MessageExtension {
+		private GpioPulse[] pulses;
+		
+		public GpioPulseArrayMessageExtension(GpioPulse[] pulses) {
+			// A GPIO pulse object has 3 4-byte integers
+			super(pulses.length*3*4);
+			
+			this.pulses = pulses;
+		}
+
+		@Override
+		void encode(ByteBuf out) {
+			for (GpioPulse pulse : pulses) {
+				out.writeInt((int) (pulse.getGpioOn() & 0xffffffff));
+				out.writeInt((int) (pulse.getGpioOff() & 0xffffffff));
+				out.writeInt((int) (pulse.getUsDelay() & 0xffffffff));
+			}
 		}
 	}
 	

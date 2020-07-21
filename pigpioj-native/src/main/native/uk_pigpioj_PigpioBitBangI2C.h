@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (III)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2COpen
-  (JNIEnv* env, jclass clz, jint sda, jint scl, jint baud);
+  (JNIEnv *, jclass, jint, jint, jint);
 
 /*
  * Class:     uk_pigpioj_PigpioBitBangI2C
@@ -25,10 +25,10 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2CClose
 
 /*
  * Class:     uk_pigpioj_PigpioBitBangI2C
- * Method:    bbI2CZIP
+ * Method:    bbI2CZip
  * Signature: (I[BI[BI)I
  */
-JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2CZIP
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioBitBangI2C_bbI2CZip
   (JNIEnv *, jclass, jint, jbyteArray, jint, jbyteArray, jint);
 
 #ifdef __cplusplus

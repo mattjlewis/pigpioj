@@ -274,4 +274,108 @@ public class PigpioJNI implements PigpioInterface {
 		return PigpioSPI.spiXfer(handle, txBuf, rxBuf, count);
 	}
 
+	@Override
+	public int gpioWaveClear() {
+		return PigpioWaveform.gpioWaveClear();
+	}
+
+	@Override
+	public int gpioWaveAddNew() {
+		return PigpioWaveform.gpioWaveAddNew();
+	}
+
+	@Override
+	public int gpioWaveAddGeneric(GpioPulse[] pulses) {
+		return PigpioWaveform.gpioWaveAddGeneric(pulses);
+	}
+
+	@Override
+	public int gpioWaveAddSerial(int userGpio, int baud, int dataBits, int stopBits, int offset, byte[] str) {
+		return PigpioWaveform.gpioWaveAddSerial(userGpio, baud, dataBits, stopBits, offset, str);
+	}
+
+	@Override
+	public int gpioWaveCreate() {
+		return PigpioWaveform.gpioWaveCreate();
+	}
+
+	@Override
+	public int gpioWaveCreatePad(int pctCB, int pctBOOL, int pctTOOL) {
+		return PigpioWaveform.gpioWaveCreatePad(pctCB, pctBOOL, pctTOOL);
+	}
+
+	@Override
+	public int gpioWaveDelete(int waveId) {
+		return PigpioWaveform.gpioWaveDelete(waveId);
+	}
+
+	@Override
+	public int gpioWaveTxSend(int waveId, int waveMode) {
+		return PigpioWaveform.gpioWaveTxSend(waveId, waveMode);
+	}
+
+	@Override
+	public int gpioWaveChain(byte[] buf) {
+		return PigpioWaveform.gpioWaveChain(buf);
+	}
+
+	@Override
+	public int gpioWaveTxAt() {
+		return PigpioWaveform.gpioWaveTxAt();
+	}
+
+	@Override
+	public int gpioWaveTxBusy() {
+		return PigpioWaveform.gpioWaveTxBusy();
+	}
+
+	@Override
+	public int gpioWaveTxStop() {
+		return PigpioWaveform.gpioWaveTxStop();
+	}
+
+	@Override
+	public int gpioWaveGetMicros() {
+		return PigpioWaveform.gpioWaveGetMicros();
+	}
+
+	@Override
+	public int gpioWaveGetHighMicros() {
+		return PigpioWaveform.gpioWaveGetHighMicros();
+	}
+
+	@Override
+	public int gpioWaveGetMaxMicros() {
+		return PigpioWaveform.gpioWaveGetMaxMicros();
+	}
+
+	@Override
+	public int gpioWaveGetPulses() {
+		return PigpioWaveform.gpioWaveGetPulses();
+	}
+
+	@Override
+	public int gpioWaveGetHighPulses() {
+		return PigpioWaveform.gpioWaveGetHighPulses();
+	}
+
+	@Override
+	public int gpioWaveGetMaxPulses() {
+		return PigpioWaveform.gpioWaveGetMaxPulses();
+	}
+
+	@Override
+	public int gpioWaveGetCbs() {
+		return PigpioWaveform.gpioWaveGetCbs();
+	}
+
+	@Override
+	public int gpioWaveGetHighCbs() {
+		return PigpioWaveform.gpioWaveGetHighCbs();
+	}
+
+	@Override
+	public int gpioWaveGetMaxCbs() {
+		return PigpioWaveform.gpioWaveGetMaxCbs();
+	}
 }
