@@ -378,4 +378,39 @@ public class PigpioJNI implements PigpioInterface {
 	public int gpioWaveGetMaxCbs() {
 		return PigpioWaveform.gpioWaveGetMaxCbs();
 	}
+
+	@Override
+	public int serOpen(String sertty, int baud, int serFlags) {
+		return PigpioSerial.serOpen(sertty, baud, serFlags);
+	}
+
+	@Override
+	public int serClose(int handle) {
+		return PigpioSerial.serClose(handle);
+	}
+
+	@Override
+	public int serWriteByte(int handle, int bVal) {
+		return PigpioSerial.serWriteByte(handle, bVal);
+	}
+
+	@Override
+	public int serReadByte(int handle) {
+		return PigpioSerial.serReadByte(handle);
+	}
+
+	@Override
+	public int serWrite(int handle, byte[] buf, int count) {
+		return PigpioSerial.serWrite(handle, buf, count);
+	}
+
+	@Override
+	public int serRead(int handle, byte[] buf, int count) {
+		return PigpioSerial.serRead(handle, buf, count);
+	}
+
+	@Override
+	public int serDataAvailable(int handle) {
+		return PigpioSerial.serDataAvailable(handle);
+	}
 }

@@ -26,7 +26,8 @@ SRC	=   pigpioj_util.c \
 	uk_pigpioj_PigpioI2C.c \
 	uk_pigpioj_PigpioSPI.c \
 	uk_pigpioj_PigpioBitBangI2C.c \
-	uk_pigpioj_PigpioWaveform.c
+	uk_pigpioj_PigpioWaveform.c \
+	uk_pigpioj_PigpioSerial.c
 
 OBJ =	$(SRC:.c=.o)
 

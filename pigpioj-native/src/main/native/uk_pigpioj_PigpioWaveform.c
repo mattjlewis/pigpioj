@@ -2,6 +2,10 @@
 
 #include "pigpioj_util.h"
 
+extern jfieldID gpioOnFieldId;
+extern jfieldID gpioOffFieldId;
+extern jfieldID usDelayFieldId;
+
 /*
  * Class:     uk_pigpioj_PigpioWaveform
  * Method:    gpioWaveClear
@@ -29,27 +33,6 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioWaveform_gpioWaveAddNew
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioWaveform_gpioWaveAddGeneric
   (JNIEnv *env, jclass clz, jobjectArray pulses) {
-	jclass gpio_pulse_class = (*env)->FindClass(env, "uk/pigpioj/GpioPulse");
-	if ((*env)->ExceptionOccurred(env)) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get GpioPulse class\n");
-		return -1;
-	}
-	jfieldID gpio_on_field_id = (*env)->GetFieldID(env, gpio_pulse_class, "gpioOn", "I");
-	if ((*env)->ExceptionOccurred(env)) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get gpioOn fieldId in GpioPulse class\n");
-		return -1;
-	}
-	jfieldID gpio_off_field_id = (*env)->GetFieldID(env, gpio_pulse_class, "gpioOff", "I");
-	if ((*env)->ExceptionOccurred(env)) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get gpioOff fieldId in GpioPulse class\n");
-		return -1;
-	}
-	jfieldID us_delay_field_id = (*env)->GetFieldID(env, gpio_pulse_class, "usDelay", "I");
-	if ((*env)->ExceptionOccurred(env)) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get usDelay fieldId in GpioPulse class\n");
-		return -1;
-	}
-
 	int array_length = (*env)->GetArrayLength(env, pulses);
 	// Convert pulses to gpioPulse_t
 	gpioPulse_t pulse_array[array_length];
@@ -61,9 +44,9 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioWaveform_gpioWaveAddGeneric
 			return -1;
 		}
 
-		pulse_array[i].gpioOn = (uint32_t) (*env)->GetIntField(env, element, gpio_on_field_id);
-		pulse_array[i].gpioOff = (uint32_t) (*env)->GetIntField(env, element, gpio_off_field_id);
-		pulse_array[i].usDelay = (uint32_t) (*env)->GetIntField(env, element, us_delay_field_id);
+		pulse_array[i].gpioOn = (uint32_t) (*env)->GetIntField(env, element, gpioOnFieldId);
+		pulse_array[i].gpioOff = (uint32_t) (*env)->GetIntField(env, element, gpioOffFieldId);
+		pulse_array[i].usDelay = (uint32_t) (*env)->GetIntField(env, element, usDelayFieldId);
 
 		(*env)->DeleteLocalRef(env, element);
 	}
