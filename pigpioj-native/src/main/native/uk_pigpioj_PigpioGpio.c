@@ -3,16 +3,10 @@
 #include "pigpioj_util.h"
 #include <sys/time.h>
 
-#define MAX_GPIO_PINS 50
-
-jobject listeners[MAX_GPIO_PINS];
+extern jobject listeners[];
+extern jmethodID callbackMethodId;
 
 void callbackFunction(int gpio, int level, uint32_t tick) {
-	// Attach to the current JVM thread
-	JavaVM* vm = getGlobalJavaVM();
-	JNIEnv* env;
-	(*vm)->AttachCurrentThread(vm, (void**)&env, NULL);
-
 	// Get the Java nano time as early as possible
 	jlong nano_time = getJavaNanoTime();
 
@@ -21,8 +15,6 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		fprintf(stderr, "PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);
-		// Detach from the current JVM thread
-		(*vm)->DetachCurrentThread(vm);
 		return;
 	}
 
@@ -30,25 +22,16 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	jobject listener = listeners[gpio];
 	if (listener == NULL) {
 		fprintf(stderr, "PigpioGpio Native: Error: JNI callbackFunction no listener object found [gpio=%d]\n", gpio);
-		// Detach from the current JVM thread
-		(*vm)->DetachCurrentThread(vm);
 		return;
 	}
 
-	// Get the listener object class
-	jclass listener_class = (*env)->GetObjectClass(env, listener);
-	if (listener_class == NULL) {
-		fprintf(stderr, "PigpioGpio Native: Error: JNI callbackFunction could not resolve class for listener object [gpio=%d]\n", gpio);
-	} else {
-		// Verify that the callback method exists
-		jmethodID callback_method = (*env)->GetMethodID(env, listener_class, "callback", "(IZJJ)V");
-		if (callback_method == NULL) {
-			fprintf(stderr, "PigpioGpio Native: Error: callbackFunction could not get 'callback' method id [gpio=%d]\n", gpio);
-		} else {
-			// invoke the callback method in the callback interface
-			(*env)->CallVoidMethod(env, listener, callback_method, gpio, level, epoch_time, nano_time);
-		}
-	}
+	// Attach to the current JVM thread
+	JavaVM* vm = getGlobalJavaVM();
+	JNIEnv* env;
+	(*vm)->AttachCurrentThread(vm, (void**)&env, NULL);
+
+	// Invoke the callback method on the listener
+	(*env)->CallVoidMethod(env, listener, callbackMethodId, gpio, level, epoch_time, nano_time);
 
 	// Detach from the current JVM thread
 	(*vm)->DetachCurrentThread(vm);
@@ -259,7 +242,7 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setServoPulseWidth
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setISRFunc
   (JNIEnv* env, jclass clz, jint gpio, jint edge, jint timeout, jobject listener) {
 	if (listener == NULL) {
-		gpioSetISRFunc(gpio, edge, timeout, NULL);
+		gpioSetISRFunc(gpio, 0, 0, NULL);
 		if (listeners[gpio] != NULL) {
 			(*env)->DeleteGlobalRef(env, listeners[gpio]);
 			listeners[gpio] = NULL;
@@ -286,7 +269,7 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_setISRFunc
 
 	// Remove the previous listener if there was one
 	if (listeners[gpio] != NULL) {
-		gpioSetISRFunc(gpio, edge, timeout, NULL);
+		gpioSetISRFunc(gpio, 0, 0, NULL);
 		(*env)->DeleteGlobalRef(env, listeners[gpio]);
 		listeners[gpio] = NULL;
 	}

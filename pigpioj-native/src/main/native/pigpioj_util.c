@@ -13,6 +13,10 @@ jclass gpioPulseClass;
 jfieldID gpioOnFieldId;
 jfieldID gpioOffFieldId;
 jfieldID usDelayFieldId;
+jclass pigpioCallbackClass;
+jmethodID callbackMethodId;
+
+jobject listeners[MAX_GPIO_PINS];
 
 /* The VM calls this function upon loading the native library. */
 jint JNI_OnLoad(JavaVM* jvm, void* reserved) {
@@ -43,7 +47,7 @@ jint JNI_OnLoad(JavaVM* jvm, void* reserved) {
 	class_name = "uk/pigpioj/GpioPulse";
 	temp_local_class_ref = (*env)->FindClass(env, class_name);
 	if ((*env)->ExceptionCheck(env) || temp_local_class_ref == NULL) {
-		fprintf(stderr, "Error looking up class %s\n", class_name);
+		fprintf(stderr, "PigpioUtil: Error looking up class %s\n", class_name);
 		return JNI_ERR;
 	}
 
@@ -53,21 +57,36 @@ jint JNI_OnLoad(JavaVM* jvm, void* reserved) {
 	// STEP 3/3 : Delete the no longer needed local reference
 	(*env)->DeleteLocalRef(env, temp_local_class_ref);
 
-	// Now look up field id references
+	class_name = "uk/pigpioj/PigpioCallback";
+	temp_local_class_ref = (*env)->FindClass(env, class_name);
+	if ((*env)->ExceptionCheck(env) || temp_local_class_ref == NULL) {
+		fprintf(stderr, "PigpioUtil: Error looking up class %s\n", class_name);
+		return JNI_ERR;
+	}
+	pigpioCallbackClass = (jclass) (*env)->NewGlobalRef(env, temp_local_class_ref);
+	(*env)->DeleteLocalRef(env, temp_local_class_ref);
+
+	// Now look up field / method id references
 
 	gpioOnFieldId = (*env)->GetFieldID(env, gpioPulseClass, "gpioOn", "I");
 	if ((*env)->ExceptionOccurred(env) || gpioOnFieldId == NULL) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get gpioOn fieldId in GpioPulse class\n");
+		fprintf(stderr, "PigpioUtil: Error: Unable to get gpioOn fieldId in GpioPulse class\n");
 		return JNI_ERR;
 	}
 	gpioOffFieldId = (*env)->GetFieldID(env, gpioPulseClass, "gpioOff", "I");
 	if ((*env)->ExceptionOccurred(env) || gpioOffFieldId == NULL) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get gpioOff fieldId in GpioPulse class\n");
+		fprintf(stderr, "PigpioUtil: Error: Unable to get gpioOff fieldId in GpioPulse class\n");
 		return JNI_ERR;
 	}
 	usDelayFieldId = (*env)->GetFieldID(env, gpioPulseClass, "usDelay", "I");
 	if ((*env)->ExceptionOccurred(env) || usDelayFieldId == NULL) {
-		fprintf(stderr, "PigpioWaveform: Error: Unable to get usDelay fieldId in GpioPulse class\n");
+		fprintf(stderr, "PigpioUtil: Error: Unable to get usDelay fieldId in GpioPulse class\n");
+		return JNI_ERR;
+	}
+
+	callbackMethodId = (*env)->GetMethodID(env, pigpioCallbackClass, "callback", "(IZJJ)V");
+	if ((*env)->ExceptionOccurred(env) || gpioOffFieldId == NULL) {
+		fprintf(stderr, "PigpioUtil: Error: Unable to get callback methodId in PigpioCallback class\n");
 		return JNI_ERR;
 	}
 
@@ -85,6 +104,15 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
 		return;
 	}
 	(*env)->DeleteGlobalRef(env, gpioPulseClass);
+	int gpio;
+	for (gpio=0; gpio<MAX_GPIO_PINS; gpio++) {
+		jobject listener = listeners[gpio];
+		if (listener != NULL) {
+			gpioSetISRFunc(gpio, 0, 0, NULL);
+			(*env)->DeleteGlobalRef(env, listeners[gpio]);
+			listeners[gpio] = NULL;
+		}
+	}
 }
 
 JavaVM* getGlobalJavaVM() {

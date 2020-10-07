@@ -14,3 +14,5 @@ jlong getJavaNanoTime();
 
 /* The VM calls this function upon loading the native library. */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* jvm, void* reserved);
+
+#define MAX_GPIO_PINS 50
