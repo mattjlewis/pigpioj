@@ -1,6 +1,6 @@
 # pigpioj
 
-pigpioj is a Java wrapper for [pigpio](http://abyz.co.uk/rpi/pigpio/) on the Raspberry Pi that supports access locally via the libpigpio.so shared library as well as via a socket connection to the pigpiod daemon process.
+pigpioj is a Java wrapper for [pigpio](http://abyz.me.uk/rpi/pigpio/) on the Raspberry Pi that supports access locally via the libpigpio.so shared library as well as via a socket connection to the pigpiod daemon process.
 
 By default pigpioj uses shared library local access; to switch to the remote socket mode you must set the PIGPIOD_HOST variable, either via environment property or Java command line property. Examples:
 
