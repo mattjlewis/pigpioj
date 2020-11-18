@@ -71,11 +71,12 @@ public interface PigpioI2CInterface {
 	
 	/**
 	 * This reads a block of up to 32 bytes from the specified register of the device associated with handle.
-	 * The amount of returned data is set by the device
+	 * The amount of returned data is set by the device.
+	 * 
 	 * @param handle File descriptor from i2cOpen
 	 * @param i2cReg I2C register
 	 * @param buf Buffer for data read
-	 * @return Returns the number of bytes read (&gt;0) if OK
+	 * @return Returns the number of bytes read (&gt;=0) if OK
 	 */
 	int i2cReadBlockData(int handle, int i2cReg, byte[] buf);
 	
@@ -83,12 +84,37 @@ public interface PigpioI2CInterface {
 	int i2cWriteBlockData(int handle, int i2cReg, byte[] buf, int count);
 	
 	/**
+	 * This writes data bytes to the specified register of the device
+	 * associated with handle and reads a device specified number
+	 * of bytes of data in return.
+	 * 
+	 * The SMBus 2.0 documentation states that a minimum of 1 byte may be
+	 * sent and a minimum of 1 byte may be received.  The total number of
+	 * bytes sent/received must be 32 or less.
+	 * 
+	 * Block write-block read. SMBus 2.0 5.5.8
+	 * 
+	 * <pre>
+	 * S Addr Wr [A] i2cReg [A] count [A] buf0 [A] ... bufn [A]
+	 *    S Addr Rd [A] [Count] A [buf0] A ... [bufn] A P
+	 * </pre>
+	 * 
+	 * @param handle File descriptor from i2cOpen
+	 * @param i2cReg 0-255, the register to write/read
+	 * @param buf an array with the data to send and to receive the read data
+	 * @param count: 1-32, the number of bytes to write
+	 * 
+	 * @return the number of bytes read (&gt;=0) if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or PI_I2C_READ_FAILED.
+	*/
+	int i2cBlockProcessCall(int handle, int i2cReg, byte[] buf, int count);
+	
+	/**
 	 * This reads count bytes from the specified register of the device associated with handle
 	 * @param handle File descriptor from i2cOpen
 	 * @param i2cReg I2C register
 	 * @param buf Buffer for data read
 	 * @param count The count may be 1-32
-	 * @return Returns the number of bytes read (&gt;0) if OK
+	 * @return Returns the number of bytes read (&gt;=0) if OK
 	 */
 	int i2cReadI2CBlockData(int handle, int i2cReg, byte[] buf, int count);
 	

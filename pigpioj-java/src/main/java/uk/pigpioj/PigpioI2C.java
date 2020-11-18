@@ -99,6 +99,8 @@ public class PigpioI2C {
 	/* This writes up to 32 bytes to the specified register of the device associated with handle */
 	public static native int i2cWriteBlockData(int handle, int i2cReg, byte[] buf, int count);
 	
+	public static native int i2cBlockProcessCall(int handle, int i2cReg, byte[] buf, int count);
+	
 	/**
 	 * This reads count bytes from the specified register of the device associated with handle
 	 * @param handle File descriptor from i2cOpen

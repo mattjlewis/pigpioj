@@ -133,6 +133,19 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cWriteBlockData
 	return rc;
 }
 
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cBlockProcessCall
+  (JNIEnv* env, jclass clz, jint handle, jint i2cReg, jbyteArray buf, jint count) {
+	jboolean is_copy;
+	jbyte* b = (*env)->GetByteArrayElements(env, buf, &is_copy);
+	int rc = i2cBlockProcessCall(handle, i2cReg, (char*)b, count);
+	if (rc >= 0) {
+		(*env)->SetByteArrayRegion(env, buf, 0, rc, b);
+	}
+	// mode = JNI_ABORT - No change hence free the buffer without copying back the possible changes
+	(*env)->ReleaseByteArrayElements(env, buf, b, JNI_ABORT);
+	return rc;
+}
+
 /*
  * Class:     uk_pigpioj_PigpioI2C
  * Method:    i2cReadI2CBlockData

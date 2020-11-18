@@ -230,6 +230,11 @@ public class PigpioJNI implements PigpioInterface {
 	}
 
 	@Override
+	public int i2cBlockProcessCall(int handle, int i2cReg, byte[] buf, int count) {
+		return PigpioI2C.i2cBlockProcessCall(handle, i2cReg, buf, count);
+	}
+
+	@Override
 	public int i2cReadI2CBlockData(int handle, int i2cReg, byte[] buf, int count) {
 		return PigpioI2C.i2cReadI2CBlockData(handle, i2cReg, buf, count);
 	}

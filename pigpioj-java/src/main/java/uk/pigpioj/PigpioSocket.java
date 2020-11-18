@@ -866,6 +866,20 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	@Override
+	public int i2cBlockProcessCall(int handle, int i2cReg, byte[] buf, int count) {
+		ResponseMessage message = sendMessage(
+				new Message(PI_CMD_I2CPK, handle, i2cReg, new ByteArrayMessageExtension(count, buf)));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+
+		ByteArrayResponseMessage bam = (ByteArrayResponseMessage) message;
+		System.arraycopy(bam.data, 0, buf, 0, bam.data.length);
+
+		return (int) message.res;
+	}
+
+	@Override
 	public int i2cReadI2CBlockData(int handle, int i2cReg, byte[] buf, int count) {
 		ResponseMessage message = sendMessage(
 				new Message(PI_CMD_I2CRI, handle, i2cReg, new UIntMessageExtension(count)));

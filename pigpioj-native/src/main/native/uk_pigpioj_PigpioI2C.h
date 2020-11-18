@@ -105,6 +105,14 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cWriteBlockData
 
 /*
  * Class:     uk_pigpioj_PigpioI2C
+ * Method:    i2cBlockProcessCall
+ * Signature: (II[BI)I
+ */
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cBlockProcessCall
+  (JNIEnv *, jclass, jint, jint, jbyteArray, jint);
+
+/*
+ * Class:     uk_pigpioj_PigpioI2C
  * Method:    i2cReadI2CBlockData
  * Signature: (II[BI)I
  */
