@@ -261,6 +261,7 @@ public class PigpioSocket implements PigpioInterface {
 	 * Response: <code>- - X uint8_t data[X]</code>
 	 */
 	private static final int PI_CMD_I2CPK = 70;
+
 	// SPI Commands
 	/**
 	 * SPI open<br>
@@ -442,7 +443,7 @@ public class PigpioSocket implements PigpioInterface {
 	void messageReceived(ResponseMessage msg) {
 		// System.out.println("messageReceived(" + msg + ")");
 
-		// A hack as the notification handle is sent via a the notification
+		// A hack as the notification handle is sent via the notification
 		// channel which has a different message structure
 		if (msg.cmd == PI_CMD_NOIB) {
 			notificationHandle = (int) msg.res;
@@ -491,7 +492,6 @@ public class PigpioSocket implements PigpioInterface {
 
 				if (rm.cmd != message.cmd) {
 					System.err.println("Unexpected response: " + rm + ". Was expecting " + message.cmd);
-					message = null;
 				}
 			} else {
 				System.err.println("Timeout waiting for response to command " + message.cmd);
@@ -885,6 +885,13 @@ public class PigpioSocket implements PigpioInterface {
 				new Message(PI_CMD_I2CRI, handle, i2cReg, new UIntMessageExtension(count)));
 		if (message == null) {
 			return PigpioConstants.ERROR;
+		}
+
+		if (!(message instanceof ByteArrayResponseMessage)) {
+			System.err
+					.println("Expected ByteArrayResponseMessage, got " + message.getClass().getName() + ": " + message);
+			throw new RuntimeException(
+					"Expected ByteArrayResponseMessage, got " + message.getClass().getName() + ": " + message);
 		}
 
 		ByteArrayResponseMessage bam = (ByteArrayResponseMessage) message;
