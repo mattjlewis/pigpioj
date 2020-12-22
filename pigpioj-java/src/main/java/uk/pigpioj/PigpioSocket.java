@@ -27,7 +27,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
 public class PigpioSocket implements PigpioInterface {
-	private static final int DEFAULT_TIMEOUT_MS = 2000;
+	private static final int DEFAULT_TIMEOUT_MS = 30_000;
 	private static final int NOTIFICATION_HANDLE_NOT_SET = -1;
 
 	static final int DEFAULT_PORT = 8888;
@@ -487,14 +487,20 @@ public class PigpioSocket implements PigpioInterface {
 		try {
 			lastWriteFuture = messageChannel.writeAndFlush(message);
 
-			if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-				rm = messageQueue.remove();
-
-				if (rm.cmd != message.cmd) {
+			// FIXME Should really loop until we get the expected response message
+			while (true) {
+				if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+					rm = messageQueue.remove();
+	
+					if (rm.cmd == message.cmd) {
+						break;
+					}
+					
+					// Shouldn't happen
 					System.err.println("Unexpected response: " + rm + ". Was expecting " + message.cmd);
+				} else {
+					System.err.println("Timeout waiting for response to command " + message.cmd);
 				}
-			} else {
-				System.err.println("Timeout waiting for response to command " + message.cmd);
 			}
 		} catch (InterruptedException e) {
 			System.err.println("Interrupted: " + e);

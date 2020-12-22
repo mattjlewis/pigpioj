@@ -3,7 +3,7 @@
 
 	<groupId>uk.pigpioj</groupId>
 	<artifactId>pigpioj-java</artifactId>
-	<version>2.5.1</version>
+	<version>2.5.3</version>
 	<name>pigpio Java wrapper</name>
 	<description>Java wrapper around pigpio (http://abyz.me.uk/rpi/pigpio/)</description>
 	<url>https://github.com/mattjlewis/pigpioj</url>
@@ -37,7 +37,7 @@
 		<developerConnection>scm:git:git://github.com:mattjlewis/pigpioj.git</developerConnection>
 		<url>https://github.com/mattjlewis/pigpioj</url>
 		<tag>HEAD</tag>
-  </scm>
+	</scm>
 
 	<issueManagement>
 		<system>GitHub Issues</system>
@@ -80,16 +80,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		
-		<github.global.server>github</github.global.server>
-		
-		<maven.min-version>3.3.0</maven.min-version>
-
 		<!-- Java version -->
-		<java.version>8</java.version>
-		<jdk.source.version>1.${java.version}</jdk.source.version>
-		<jdk.target.version>1.${java.version}</jdk.target.version>
-		<maven.compiler.source>${jdk.source.version}</maven.compiler.source>
-		<maven.compiler.target>${jdk.target.version}</maven.compiler.target>
+		<maven.compiler.release>8</maven.compiler.release>
 		
 		<!-- Core plugins -->
 		<maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
@@ -122,7 +114,7 @@
 		<eclipse.m2e.lifecycle-mapping.version>1.0.0</eclipse.m2e.lifecycle-mapping.version>
 		
 		<!-- Libraries -->
-		<netty.version>4.1.52.Final</netty.version>
+		<netty.version>4.1.54.Final</netty.version>
 	</properties>
 	
 	<dependencies>
@@ -270,11 +262,9 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<addClasspath>true</addClasspath>
-						</manifest>
+						<manifestEntries>
+							<Automatic-Module-Name>uk.pigpioj</Automatic-Module-Name>
+						</manifestEntries>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>

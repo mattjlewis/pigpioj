@@ -26,7 +26,6 @@ package uk.pigpioj.test;
  * #L%
  */
 
-
 import java.io.IOException;
 
 import uk.pigpioj.PigpioConstants;
@@ -35,37 +34,39 @@ import uk.pigpioj.PigpioJ;
 
 public class PigpioPerfTest {
 	private static final int DEFAULT_ITERATIONS = 5_000_000;
-	
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.out.println("Usage: " + PigpioPerfTest.class.getName() + " <pin-number> [<iterations>]");
 			System.exit(1);
 		}
-		
+
 		final int pin = Integer.parseInt(args[0]);
 		final int iterations = args.length > 1 ? Integer.parseInt(args[1]) : DEFAULT_ITERATIONS;
-		
+
 		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
 			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {
 				throw new IOException("Error in pigpio_impl.getVersion()");
 			}
-			
+
 			int rc = pigpio_impl.setMode(pin, PigpioConstants.MODE_PI_OUTPUT);
 			if (rc < 0) {
 				throw new IOException("Error in pigpio_impl.setMode()");
 			}
 
-			for (int j=0; j<5; j++) {
-				long start_nano = System.nanoTime();
-				for (int i=0; i<iterations; i++) {
+			for (int j = 0; j < 5; j++) {
+				long start_ms = System.currentTimeMillis();
+				for (int i = 0; i < iterations; i++) {
 					pigpio_impl.write(pin, true);
 					pigpio_impl.write(pin, false);
 				}
-				long duration_ns = (System.nanoTime() - start_nano);
-				System.out.format("Duration for %d iterations: %.4fs%n",
-						Integer.valueOf(iterations), Float.valueOf(((float)duration_ns) / 1000 / 1000 / 1000));
+				long duration_ms = (System.currentTimeMillis() - start_ms);
+				double frequency = iterations / (duration_ms / 1000.0);
+
+				System.out.format("Duration for %d iterations: %.4fs, frequency: %.0f%n", Integer.valueOf(iterations),
+						Float.valueOf((duration_ms) / 1000f), Double.valueOf(frequency));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

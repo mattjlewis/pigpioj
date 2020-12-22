@@ -1,0 +1,5 @@
+module uk.pigpioj {
+	exports uk.pigpioj;
+
+	requires io.netty.all;
+}

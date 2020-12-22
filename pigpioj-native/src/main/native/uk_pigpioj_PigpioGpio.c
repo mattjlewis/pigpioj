@@ -49,7 +49,14 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_initialise
 		listeners[i] = NULL;
 	}
 
-	int rc = gpioCfgInterfaces(PI_DISABLE_FIFO_IF | PI_DISABLE_SOCK_IF);
+	// Disable the signal handler to prevent it interfering with the JVM
+	int rc = gpioCfgSetInternals(gpioCfgGetInternals() | PI_CFG_NOSIGHANDLER);
+	if (rc < 0) {
+		fprintf(stderr, "Error in gpioCfgSetInternals: %d\n", rc);
+		return -1;
+	}
+
+	rc = gpioCfgInterfaces(PI_DISABLE_FIFO_IF | PI_DISABLE_SOCK_IF);
 	if (rc < 0) {
 		fprintf(stderr, "Error in gpioCfgInterfaces: %d\n", rc);
 		return -1;

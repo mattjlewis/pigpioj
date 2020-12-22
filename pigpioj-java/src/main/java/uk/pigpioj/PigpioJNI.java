@@ -10,13 +10,14 @@ public class PigpioJNI implements PigpioInterface {
 	private static final String LIB_NAME = "pigpioj";
 	private static boolean loaded;
 	
+	@SuppressWarnings("resource")
 	public static synchronized int initialise() {
 		if (! loaded) {
-			@SuppressWarnings("resource")
-			InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + LIB_NAME + ".so");
+			String lib_name = LIB_NAME + "-" + System.getProperty("os.arch");
+			InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + lib_name + ".so");
 			if (is != null) {
 				try {
-					Path path = Files.createTempFile("lib" + LIB_NAME, ".so");
+					Path path = Files.createTempFile("lib" + lib_name, ".so");
 					path.toFile().deleteOnExit();
 					Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
 					Runtime.getRuntime().load(path.toString());
