@@ -42,7 +42,7 @@ Examples:
 
 Command line:
 ```shell
-java -cp pigpioj-2.1.jar:<your-jar> -DPIGPIOD_HOST=<your-pigpiod-host> <your-class>
+java -DPIGPIOD_HOST=<<your-pigpiod-host>> -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
 ```
 
 Sockets mode is enabled by setting the `PIGPIOD_HOST` variable, either via the command
@@ -50,7 +50,7 @@ line or as an environment variable.
 
 Command line:
 ```shell
-java -DPIGPIOD_HOST=<<raspberry-pi-hostname-or-ip-address>> -cp pigpioj-2.5.4.jar:<<your_app.jar>> <<your_main_class>>
+java -DPIGPIOD_HOST=<<raspberry-pi-hostname-or-ip-address>> -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
 ```
 
 Environment variable:
