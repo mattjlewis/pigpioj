@@ -462,7 +462,7 @@ public class PigpioSocket implements PigpioInterface {
 	void notificationReceived(NotificationMessage msg) {
 		if (msg.flags == 0) {
 			int changed_level_mask = lastGpioLevelMask ^ msg.level;
-			System.out.println("changed_level_mask: " + changed_level_mask);
+			//System.out.println("changed_level_mask: " + changed_level_mask);
 			lastGpioLevelMask = msg.level;
 			callbacks.entrySet().stream().filter(entry -> (1 << entry.getKey().intValue() & changed_level_mask) != 0)
 					.forEach(entry -> entry.getValue().callback(entry.getKey().intValue(),

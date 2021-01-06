@@ -15,8 +15,8 @@ INCLUDE	     = -I. \
 
 CFLAGS      := -O3 -Wall -pthread -fPIC $(INCLUDE)
 
-#LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic -lrt
-LIBS         =  -lpigpio -lrt
+#LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic
+LIBS         =  -lpigpio
 
 # Should not alter anything below this line
 ###############################################################################
