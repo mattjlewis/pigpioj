@@ -5,8 +5,6 @@ It supports two modes for interfacing with pigpio; JNI (the default) and Sockets
 Note that the primary driver for developing pigpioj was to provide an optimised hardware interface
 library for the platform and device independent library [diozero](http://www.diozero.com).
 
-Please make 
-
 ## JNI
 
 The optimisations within pigpio (using /dev/mem) unfortunately requires root access.
