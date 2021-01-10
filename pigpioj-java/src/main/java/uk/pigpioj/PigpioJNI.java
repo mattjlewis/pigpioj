@@ -5,8 +5,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PigpioJNI implements PigpioInterface {
+	private static final Logger LOGGER = Logger.getLogger(PigpioJNI.class.getName());
 	private static final String LIB_NAME = "pigpioj";
 	private static boolean loaded;
 	
@@ -23,7 +26,7 @@ public class PigpioJNI implements PigpioInterface {
 					Runtime.getRuntime().load(path.toString());
 					loaded = true;
 				} catch (Throwable t) {
-					System.err.println("Error loading library from classpath, trying System.loadLibrary: " + t);
+					LOGGER.warning("Error loading library from classpath, trying System.loadLibrary: " + t);
 				} finally {
 					try { is.close(); } catch (IOException e) { }
 				}
@@ -34,8 +37,7 @@ public class PigpioJNI implements PigpioInterface {
 					System.loadLibrary(LIB_NAME);
 					loaded = true;
 				} catch (Throwable t) {
-					System.err.println("Error loading pigpioj library from system library path: " + t);
-					t.printStackTrace();
+					LOGGER.log(Level.SEVERE, "Error loading pigpioj library from system library path: " + t, t);
 				}
 			}
 			
