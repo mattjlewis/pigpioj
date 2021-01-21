@@ -14,6 +14,12 @@ In addition, the pigpio shared library must be installed on the Raspberry Pi; it
 sudo apt update && sudo apt -y install libpigpio1 libpigpiod-if2-1
 ```
 
+In addition, the pigpiod daemon process must not be running:
+
+```shell
+sudo systemctl stop pigpiod.service
+```
+
 ### Building the Native Library
 
 Make sure that the pigpio development tools are installed:
