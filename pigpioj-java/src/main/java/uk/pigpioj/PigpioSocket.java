@@ -467,6 +467,10 @@ public class PigpioSocket implements PigpioInterface {
 		if (msg.flags == 0) {
 			int changed_level_mask = lastGpioLevelMask ^ msg.level;
 			LOGGER.log(Level.FINE, "changed_level_mask: " + changed_level_mask);
+			LOGGER.log(Level.FINE, () -> "changed_level_mask: \n" //
+				+ decodeMask(changed_level_mask) + "\n"
+				+ "...|....;....|....;....|....;....|....;....|....;....|....;....|");
+			
 			lastGpioLevelMask = msg.level;
 			callbacks.entrySet().stream().filter(entry -> (1 << entry.getKey().intValue() & changed_level_mask) != 0)
 					.forEach(entry -> entry.getValue().callback(entry.getKey().intValue(),
@@ -503,7 +507,9 @@ public class PigpioSocket implements PigpioInterface {
 					// Shouldn't happen
 					LOGGER.log(Level.WARNING, "Unexpected response: " + rm + ". Was expecting " + message.cmd);
 				} else {
-					LOGGER.log(Level.WARNING, "Timeout waiting for response to command " + message.cmd);
+					String msg = "Timeout waiting for response to command " + message.cmd;
+					LOGGER.log(Level.SEVERE, msg);
+					throw new TimeoutException(msg);
 				}
 			}
 		} catch (InterruptedException e) {
@@ -1296,6 +1302,15 @@ public class PigpioSocket implements PigpioInterface {
 		return (int) message.res;
 	}
 
+	public String decodeMask(int mask) {
+		StringBuilder b = new StringBuilder(64);
+		
+		for (int i=63; i >= 0; --i ) {
+			b.append( ((1 << i) & mask ) != 0 ? "1" : "0");
+		}
+		return b.toString();
+	}
+	
 	/*
 	 * typedef struct { uint32_t cmd; uint32_t p1; uint32_t p2; union { uint32_t p3;
 	 * uint32_t ext_len; uint32_t res; }; } cmdCmd_t;
@@ -1686,5 +1701,17 @@ public class PigpioSocket implements PigpioInterface {
 			LOGGER.log(Level.SEVERE, "exceptionCaught: " + cause, cause);
 			context.close();
 		}
+	}
+	
+	static class TimeoutException extends RuntimeException {
+
+		public TimeoutException() {
+			super();
+		}
+
+		public TimeoutException(String message) {
+			super(message);
+		}
+		
 	}
 }
