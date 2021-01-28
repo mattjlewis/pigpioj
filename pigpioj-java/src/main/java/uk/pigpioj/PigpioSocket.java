@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -27,6 +29,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
 public class PigpioSocket implements PigpioInterface {
+	private static final Logger LOGGER = Logger.getLogger(PigpioSocket.class.getName());
 	private static final int DEFAULT_TIMEOUT_MS = 30_000;
 	private static final int NOTIFICATION_HANDLE_NOT_SET = -1;
 
@@ -414,6 +417,8 @@ public class PigpioSocket implements PigpioInterface {
 
 		// Enable the notification channel
 		notificationChannel.writeAndFlush(new Message(PI_CMD_NOIB, 0, 0));
+		
+		LOGGER.info("Connected to "+host+" using port "+port);
 	}
 
 	@Override
@@ -433,15 +438,14 @@ public class PigpioSocket implements PigpioInterface {
 				lastWriteFuture.sync();
 			}
 		} catch (InterruptedException e) {
-			System.err.println("Error: " + e);
-			e.printStackTrace(System.err);
+			LOGGER.log(Level.WARNING, "Error: " + e, e);
 		} finally {
 			workerGroup.shutdownGracefully();
 		}
 	}
 
 	void messageReceived(ResponseMessage msg) {
-		// System.out.println("messageReceived(" + msg + ")");
+		LOGGER.log(Level.FINER, "messageReceived(" + msg + ")");
 
 		// A hack as the notification handle is sent via the notification
 		// channel which has a different message structure
@@ -462,20 +466,24 @@ public class PigpioSocket implements PigpioInterface {
 	void notificationReceived(NotificationMessage msg) {
 		if (msg.flags == 0) {
 			int changed_level_mask = lastGpioLevelMask ^ msg.level;
-			//System.out.println("changed_level_mask: " + changed_level_mask);
+			LOGGER.log(Level.FINE, "changed_level_mask: " + changed_level_mask);
+			LOGGER.log(Level.FINE, () -> "changed_level_mask: \n" //
+				+ decodeMask(changed_level_mask) + "\n"
+				+ "...|....;....|....;....|....;....|....;....|....;....|....;....|");
+			
 			lastGpioLevelMask = msg.level;
 			callbacks.entrySet().stream().filter(entry -> (1 << entry.getKey().intValue() & changed_level_mask) != 0)
 					.forEach(entry -> entry.getValue().callback(entry.getKey().intValue(),
 							(1 << entry.getKey().intValue() & msg.level) != 0, msg.epochTime, msg.nanoTime));
 		} else {
 			if ((msg.flags & PI_NTFY_FLAGS_WDOG) != 0) {
-				System.out.println("WDOG notification message: " + msg);
+				LOGGER.log(Level.INFO, "WDOG notification message: " + msg);
 			}
 			if ((msg.flags & PI_NTFY_FLAGS_ALIVE) != 0) {
-				System.out.println("ALIVE notification message: " + msg);
+				LOGGER.log(Level.FINE, "ALIVE notification message: " + msg);
 			}
 			if ((msg.flags & PI_NTFY_FLAGS_EVENT) != 0) {
-				System.out.println("EVENT notification message: " + msg);
+				LOGGER.log(Level.INFO, "EVENT notification message: " + msg);
 			}
 		}
 	}
@@ -497,13 +505,15 @@ public class PigpioSocket implements PigpioInterface {
 					}
 					
 					// Shouldn't happen
-					System.err.println("Unexpected response: " + rm + ". Was expecting " + message.cmd);
+					LOGGER.log(Level.WARNING, "Unexpected response: " + rm + ". Was expecting " + message.cmd);
 				} else {
-					System.err.println("Timeout waiting for response to command " + message.cmd);
+					String msg = "Timeout waiting for response to command " + message.cmd;
+					LOGGER.log(Level.SEVERE, msg);
+					throw new TimeoutException(msg);
 				}
 			}
 		} catch (InterruptedException e) {
-			System.err.println("Interrupted: " + e);
+			LOGGER.log(Level.WARNING, "Interrupted: " + e);
 		} finally {
 			lock.unlock();
 		}
@@ -514,12 +524,12 @@ public class PigpioSocket implements PigpioInterface {
 	@Override
 	public int enableListener(int gpio, int edge, PigpioCallback callback) {
 		if (notificationHandle == NOTIFICATION_HANDLE_NOT_SET) {
-			System.err.println("Error, notification handle not set");
+			LOGGER.log(Level.WARNING, "Error, notification handle not set");
 		}
 
 		int monitor_bit = 1 << gpio;
 		if ((monitorMask & monitor_bit) != 0) {
-			System.err.println("GPIO " + gpio + " is already being monitored");
+			LOGGER.log(Level.WARNING, "GPIO " + gpio + " is already being monitored");
 			return PigpioConstants.SUCCESS;
 		}
 		if (sendMessage(new Message(PI_CMD_NB, notificationHandle, monitorMask | monitor_bit)) == null) {
@@ -534,12 +544,12 @@ public class PigpioSocket implements PigpioInterface {
 	@Override
 	public int disableListener(int gpio) {
 		if (notificationHandle == NOTIFICATION_HANDLE_NOT_SET) {
-			System.err.println("Error, notification handle not set");
+			LOGGER.log(Level.WARNING, "Error, notification handle not set");
 		}
 
 		int monitor_bit = 1 << gpio;
 		if ((monitorMask & monitor_bit) == 0) {
-			System.err.println("GPIO " + gpio + " isn't being monitored");
+			LOGGER.log(Level.WARNING, "GPIO " + gpio + " isn't being monitored");
 			return PigpioConstants.SUCCESS;
 		}
 		if (sendMessage(new Message(PI_CMD_NB, notificationHandle, monitorMask & ~monitor_bit)) == null) {
@@ -894,8 +904,7 @@ public class PigpioSocket implements PigpioInterface {
 		}
 
 		if (!(message instanceof ByteArrayResponseMessage)) {
-			System.err
-					.println("Expected ByteArrayResponseMessage, got " + message.getClass().getName() + ": " + message);
+			LOGGER.log(Level.SEVERE, "Expected ByteArrayResponseMessage, got " + message.getClass().getName() + ": " + message);
 			throw new RuntimeException(
 					"Expected ByteArrayResponseMessage, got " + message.getClass().getName() + ": " + message);
 		}
@@ -1293,6 +1302,15 @@ public class PigpioSocket implements PigpioInterface {
 		return (int) message.res;
 	}
 
+	public String decodeMask(int mask) {
+		StringBuilder b = new StringBuilder(64);
+		
+		for (int i=63; i >= 0; --i ) {
+			b.append( ((1 << i) & mask ) != 0 ? "1" : "0");
+		}
+		return b.toString();
+	}
+	
 	/*
 	 * typedef struct { uint32_t cmd; uint32_t p1; uint32_t p2; union { uint32_t p3;
 	 * uint32_t ext_len; uint32_t res; }; } cmdCmd_t;
@@ -1661,8 +1679,7 @@ public class PigpioSocket implements PigpioInterface {
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext context, Throwable cause) {
-			System.err.println("exceptionCaught: " + cause);
-			cause.printStackTrace(System.err);
+			LOGGER.log(Level.SEVERE, "exceptionCaught: " + cause, cause);
 			context.close();
 		}
 	}
@@ -1681,9 +1698,20 @@ public class PigpioSocket implements PigpioInterface {
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext context, Throwable cause) {
-			System.err.println("exceptionCaught: " + cause);
-			cause.printStackTrace(System.err);
+			LOGGER.log(Level.SEVERE, "exceptionCaught: " + cause, cause);
 			context.close();
 		}
+	}
+	
+	static class TimeoutException extends RuntimeException {
+
+		public TimeoutException() {
+			super();
+		}
+
+		public TimeoutException(String message) {
+			super(message);
+		}
+		
 	}
 }
