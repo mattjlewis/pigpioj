@@ -29,7 +29,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 
 public class PigpioSocket implements PigpioInterface {
-	private static final Logger LOGGER = Logger.getLogger(PigpioSocket.class.getName());
+	static final Logger LOGGER = Logger.getLogger(PigpioSocket.class.getName());
 	private static final int DEFAULT_TIMEOUT_MS = 30_000;
 	private static final int NOTIFICATION_HANDLE_NOT_SET = -1;
 
@@ -1704,14 +1704,10 @@ public class PigpioSocket implements PigpioInterface {
 	}
 	
 	static class TimeoutException extends RuntimeException {
-
-		public TimeoutException() {
-			super();
-		}
+		private static final long serialVersionUID = 5767582299816127993L;
 
 		public TimeoutException(String message) {
 			super(message);
 		}
-		
 	}
 }
