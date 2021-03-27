@@ -12,10 +12,10 @@ public class PigpioJNI implements PigpioInterface {
 	private static final Logger LOGGER = Logger.getLogger(PigpioJNI.class.getName());
 	private static final String LIB_NAME = "pigpioj";
 	private static boolean loaded;
-	
+
 	@SuppressWarnings("resource")
 	public static synchronized int initialise() {
-		if (! loaded) {
+		if (!loaded) {
 			String lib_name = LIB_NAME + "-" + System.getProperty("os.arch");
 			InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + lib_name + ".so");
 			if (is != null) {
@@ -26,12 +26,17 @@ public class PigpioJNI implements PigpioInterface {
 					Runtime.getRuntime().load(path.toString());
 					loaded = true;
 				} catch (Throwable t) {
-					LOGGER.warning("Error loading library from classpath, trying System.loadLibrary: " + t);
+					LOGGER.log(Level.WARNING, "Error loading library from classpath, trying System.loadLibrary: " + t,
+							t);
 				} finally {
-					try { is.close(); } catch (IOException e) { }
+					try {
+						is.close();
+					} catch (IOException e) {
+						// Ignore
+					}
 				}
 			}
-			if (! loaded) {
+			if (!loaded) {
 				// Try load from the Java system library path (-Djava.library.path)
 				try {
 					System.loadLibrary(LIB_NAME);
@@ -40,43 +45,43 @@ public class PigpioJNI implements PigpioInterface {
 					LOGGER.log(Level.SEVERE, "Error loading pigpioj library from system library path: " + t, t);
 				}
 			}
-			
+
 			if (loaded) {
 				int rc = PigpioGpio.initialise();
 				return rc;
 			}
 		}
-		
+
 		return loaded ? PigpioConstants.SUCCESS : PigpioConstants.ERROR;
 	}
-	
+
 	public PigpioJNI() {
 		int rc = initialise();
 		if (rc < 0) {
 			throw new RuntimeException("Error initialising pigpio: " + rc);
 		}
 	}
-	
+
 	@Override
 	public void close() {
 		PigpioGpio.terminate();
 	}
-	
+
 	@Override
 	public int enableListener(int gpio, int edge, PigpioCallback callback) {
 		return PigpioGpio.setISRFunc(gpio, edge, -1, callback);
 	}
-	
+
 	@Override
 	public int disableListener(int gpio) {
 		return PigpioGpio.setISRFunc(gpio, PigpioConstants.EITHER_EDGE, -1, null);
 	}
-	
+
 	@Override
 	public int getVersion() {
 		return PigpioGpio.getVersion();
 	}
-	
+
 	@Override
 	public int getHardwareRevision() {
 		return PigpioGpio.getHardwareRevision();
@@ -181,7 +186,7 @@ public class PigpioJNI implements PigpioInterface {
 	public int i2cClose(int handle) {
 		return PigpioI2C.i2cClose(handle);
 	}
-	
+
 	@Override
 	public int i2cWriteQuick(int handle, int bit) {
 		return PigpioI2C.i2cWriteQuick(handle, bit);

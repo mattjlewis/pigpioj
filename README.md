@@ -5,12 +5,17 @@ It supports two modes for interfacing with pigpio; JNI (the default) and Sockets
 Note that the primary driver for developing pigpioj was to provide an optimised hardware interface
 library for the platform and device independent library [diozero](http://www.diozero.com).
 
+Make sure pigpio is installed on your Raspberry Pi:
+```shell
+sudo apt update && sudo apt -y install pigpio pigpiod pigpio-tools
+```
+
 ## JNI
 
 The optimisations within pigpio (using /dev/mem) unfortunately requires root access.
 Because of this all pigpioj applications that use the default JNI mode must be run as root.
 In addition, the pigpio shared library must be installed on the Raspberry Pi; it can be installed by running:
-```
+```shell
 sudo apt update && sudo apt -y install libpigpio1 libpigpiod-if2-1
 ```
 
