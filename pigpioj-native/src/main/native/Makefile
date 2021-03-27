@@ -7,16 +7,17 @@
 
 TARGET=libpigpioj.so
 
-CC	         = gcc
+CC	         = $(CROSS_PREFIX)gcc
 INCLUDE	     = -I. \
                -I/$(JAVA_HOME)/include                         \
                -I/$(JAVA_HOME)/include/linux                   \
+	       -I$(HOME)/pigpio                                \
                -I/usr/local/include -I/usr/local/include/linux
 
-CFLAGS      := -O3 -Wall -pthread -fPIC $(INCLUDE)
+CFLAGS      := -O3 -Wall -pthread -fPIC $(CC_CFLAGS) $(INCLUDE)
 
 #LIBS         =  -Wl,-Bstatic -lpigpio -Wl,-Bdynamic
-LIBS         =  -lpigpio
+LIBS         =  -L$(HOME)/pigpio/$(ARCH) -lpigpio
 
 # Should not alter anything below this line
 ###############################################################################

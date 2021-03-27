@@ -58,7 +58,7 @@ public class PigpioJNI implements PigpioInterface {
 	public PigpioJNI() {
 		int rc = initialise();
 		if (rc < 0) {
-			throw new RuntimeException("Error initialising pigpio: " + rc);
+			throw new RuntimeException("Error initialising pigpio (must be run as root!): " + rc);
 		}
 	}
 
