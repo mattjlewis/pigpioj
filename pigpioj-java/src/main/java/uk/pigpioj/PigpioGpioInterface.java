@@ -187,10 +187,10 @@ public interface PigpioGpioInterface {
 	 * microseconds. The level is then reported. Level changes of less than steady microseconds are ignored.
 	 * Note, each (stable) edge will be time-stamped steady microseconds after it was first detected.
 	 * @param gpio 0-31
-	 * @param steadyMs 0-300000
+	 * @param steadyUs 0-300000
 	 * @return 0 if OK, otherwise PI_BAD_USER_GPIO, or PI_BAD_FILTER
 	 */
-	int glitchFilter(int gpio, int steadyMs);
+	int glitchFilter(int gpio, int steadyUs);
 	
 	/**
 	 * Starts a hardware clock on a GPIO at the specified frequency. Frequencies above 30MHz are unlikely to work.

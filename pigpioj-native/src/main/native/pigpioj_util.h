@@ -8,9 +8,10 @@ void throwException(JNIEnv* env, const char* exception, const char* message /*= 
 void throwIOException(JNIEnv* env, const char* message /*= NULL*/);
 void throwRuntimeException(JNIEnv* env, const char* message /*= NULL*/);
 void throwIllegalArgumentException(JNIEnv* env, const char* message /*= NULL*/);
-jlong getEpochTime();
-jlong getEpochTime2();
-jlong getJavaNanoTime();
+jlong getEpochTimeMillis();
+jlong getEpochTimeMillis2();
+jlong getEpochTimeNanos();
+jlong getJavaTimeNanos();
 
 /* The VM calls this function upon loading the native library. */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* jvm, void* reserved);

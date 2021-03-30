@@ -4,4 +4,4 @@ PATH=/home/vagrant/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian
 #make clean && make CROSS_COMPILE=arm-linux-gnueabihf- ARCH=armv8-a
 make clean && make CROSS_PREFIX=aarch64-linux-gnu- ARCH=armv8-a
 mkdir -p aarch64
-cp libpigpioj.so aarch64/.
+mv libpigpioj.so libpigpioj-aarch64.so

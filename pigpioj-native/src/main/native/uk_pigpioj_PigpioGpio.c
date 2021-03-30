@@ -8,10 +8,8 @@ extern jmethodID callbackMethodId;
 
 void callbackFunction(int gpio, int level, uint32_t tick) {
 	// Get the Java nano time as early as possible
-	jlong nano_time = getJavaNanoTime();
-
-	// Now get the UNIX epoch time
-	jlong epoch_time = getEpochTime();
+	jlong nano_time = getJavaTimeNanos();
+	jlong epoch_time_ms = getEpochTimeMillis();
 
 	if (gpio < 0 || gpio >= MAX_GPIO_PINS) {
 		fprintf(stderr, "PigpioGpio Native: Error: callbackFunction invalid pin number (%d); must be 0..%d.\n", gpio, MAX_GPIO_PINS-1);
@@ -31,7 +29,7 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 	(*vm)->AttachCurrentThread(vm, (void**)&env, NULL);
 
 	// Invoke the callback method on the listener
-	(*env)->CallVoidMethod(env, listener, callbackMethodId, gpio, level, epoch_time, nano_time);
+	(*env)->CallVoidMethod(env, listener, callbackMethodId, gpio, level, epoch_time_ms, nano_time);
 
 	// Detach from the current JVM thread
 	(*vm)->DetachCurrentThread(vm);

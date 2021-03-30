@@ -69,6 +69,8 @@ public class PigpioJNI implements PigpioInterface {
 
 	@Override
 	public int enableListener(int gpio, int edge, PigpioCallback callback) {
+		// Note that setISRFunc uses the underlying Linux sysfs GPIO interface for interrupts.
+		// The glitch filter has no affect - use setAlertFunc instead
 		return PigpioGpio.setISRFunc(gpio, edge, -1, callback);
 	}
 

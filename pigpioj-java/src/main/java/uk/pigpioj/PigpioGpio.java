@@ -200,7 +200,8 @@ public class PigpioGpio {
 	 */
 	public static native int setServoPulseWidth(int gpio, int pulseWidth);
 	
-	/** Registers a function to be called (a callback) whenever the specified GPIO interrupt occurs
+	/**
+	 * Registers a function to be called (a callback) whenever the specified GPIO interrupt occurs
 	 * One function may be registered per GPIO.
 	 * The function is passed the GPIO, the current level, and the current tick.
 	 * The level will be PI_TIMEOUT if the optional interrupt timeout expires.

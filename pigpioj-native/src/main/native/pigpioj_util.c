@@ -18,6 +18,8 @@ jmethodID callbackMethodId;
 
 jobject listeners[MAX_GPIO_PINS];
 
+#define SEC_IN_NANOSECS  1000000000ULL
+
 /* The VM calls this function upon loading the native library. */
 jint JNI_OnLoad(JavaVM* jvm, void* reserved) {
 	// Obtain the JNIEnv from the VM and confirm JNI_VERSION
@@ -139,20 +141,45 @@ void throwIllegalArgumentException(JNIEnv* env, const char* message /*= NULL*/) 
 	throwException(env, "java/lang/IllegalArgumentException", message);
 }
 
-jlong getEpochTime() {
+jlong getEpochTimeMillis() {
 	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return ((jlong) tp.tv_sec) * 1000 + tp.tv_usec / 1000;
+	/*int rc = */gettimeofday(&tp, NULL);
+	return tp.tv_sec * 1000ull + tp.tv_usec / 1000;
 }
 
-jlong getEpochTime2() {
+jlong getEpochTimeMillis2() {
 	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	return ((jlong) ts.tv_sec) * 1000 + ts.tv_nsec / 1000 / 1000;
+	/*int rc = */clock_gettime(CLOCK_REALTIME, &ts);
+	return ts.tv_sec * 1000ull + ts.tv_nsec / 1000000;
 }
 
-jlong getJavaNanoTime() {
+jlong getEpochTimeNanos() {
+	struct timespec ts;
+	/*int rc = */clock_gettime(CLOCK_REALTIME, &ts);
+	return ts.tv_sec * SEC_IN_NANOSECS + ts.tv_nsec;
+}
+
+jlong getJavaTimeNanos() {
 	struct timespec ts;
 	/*int rc = */clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ((jlong) ts.tv_sec) * (1000 * 1000 * 1000) + ((jlong) ts.tv_nsec);
+	return ts.tv_sec * 1000000000ull + ts.tv_nsec;
+}
+
+// See: http://stas-blogspot.blogspot.co.uk/2012/02/what-is-behind-systemnanotime.html
+// http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/9b0ca45cd756/src/os/linux/vm/os_linux.cpp
+jlong javaTimeNanos() {
+	int supports_monotonic_clock = 1;
+	if (supports_monotonic_clock) {
+		struct timespec tp;
+		/*int status = */clock_gettime(CLOCK_MONOTONIC, &tp);
+		//assert(status == 0, "gettime error");
+		jlong result = ((jlong) tp.tv_sec) * SEC_IN_NANOSECS + (jlong) tp.tv_nsec;
+		return result;
+	} else {
+		struct timeval time;
+		/*int status = */gettimeofday(&time, NULL);
+		//assert(status != -1, "linux error");
+		jlong usecs = ((jlong) time.tv_sec) * (1000 * 1000) + ((jlong) time.tv_usec);
+		return 1000 * usecs;
+	}
 }
