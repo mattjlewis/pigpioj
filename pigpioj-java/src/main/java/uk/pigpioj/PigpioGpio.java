@@ -220,8 +220,8 @@ public class PigpioGpio {
 	 * succession may be missed by the kernel (i.e. this mechanism can not be used
 	 * to capture several interrupts only a few microseconds apart)
 	 * @param gpio GPIO
-	 * @param edge None / Rising / Falling / None
-	 * @param timeout Timeout
+	 * @param edge RISING_EDGE, FALLING_EDGE, or EITHER_EDGE
+	 * @param timeout interrupt timeout in milliseconds (<=0 to cancel)
 	 * @param callback Callback function
 	 * @return Status
 	 */
