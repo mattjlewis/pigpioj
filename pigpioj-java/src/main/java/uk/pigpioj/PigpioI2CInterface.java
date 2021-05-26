@@ -1,6 +1,21 @@
 package uk.pigpioj;
 
 public interface PigpioI2CInterface {
+	/** max pi_i2c_msg_t per transaction */
+	int PI_I2C_RDRW_IOCTL_MAX_MSGS = 42;
+
+	// bbI2CZip and i2cZip commands
+	int PI_I2C_END = 0;
+	int PI_I2C_ESC = 1;
+	int PI_I2C_START = 2;
+	int PI_I2C_COMBINED_ON = 2;
+	int PI_I2C_STOP = 3;
+	int PI_I2C_COMBINED_OFF = 3;
+	int PI_I2C_ADDR = 4;
+	int PI_I2C_FLAGS = 5;
+	int PI_I2C_READ = 6;
+	int PI_I2C_WRITE = 7;
+
 	/**
 	 * <p>
 	 * This returns a handle for the device at the address on the I2C bus.
@@ -12,7 +27,7 @@ public interface PigpioI2CInterface {
 	 * <p>
 	 * The following abbreviations are used:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * S      (1 bit) : Start bit
 	 * P      (1 bit) : Stop bit
@@ -26,7 +41,7 @@ public interface PigpioI2CInterface {
 	 *
 	 * [..]: Data sent by the device.
 	 * </pre>
-	 * 
+	 *
 	 * @param i2cBus   I2C bus number
 	 * @param i2cAddr  I2C device address
 	 * @param i2cFlags I2C flags
@@ -36,7 +51,7 @@ public interface PigpioI2CInterface {
 
 	/**
 	 * This closes the I2C device associated with the handle
-	 * 
+	 *
 	 * @param handle File descriptor from {@link uk.pigpioj.PigpioI2C#i2cOpen
 	 *               i2cOpen}
 	 * @return Status
@@ -46,7 +61,7 @@ public interface PigpioI2CInterface {
 	/**
 	 * This sends a single bit (in the Rd/Wr bit) to the device associated with
 	 * handle.
-	 * 
+	 *
 	 * @param handle &gt;=0, as returned by a call to i2cOpen
 	 * @param bit    0-1, the value to write
 	 * @return 0 if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or
@@ -56,7 +71,7 @@ public interface PigpioI2CInterface {
 
 	/**
 	 * This reads a single byte from the device associated with handle
-	 * 
+	 *
 	 * @param handle &gt;=0, as returned by a call to i2cOpen
 	 * @return the byte read (&gt;=0) if OK, otherwise PI_BAD_HANDLE, or
 	 *         PI_I2C_READ_FAILED.
@@ -65,7 +80,7 @@ public interface PigpioI2CInterface {
 
 	/**
 	 * This sends a single byte to the device associated with handle.
-	 * 
+	 *
 	 * @param handle &gt;=0, as returned by a call to i2cOpen
 	 * @param bVal   0-0xFF, the value to write
 	 * @return 0 if OK, otherwise PI_BAD_HANDLE, PI_BAD_PARAM, or
@@ -107,7 +122,7 @@ public interface PigpioI2CInterface {
 	 * This reads a block of up to 32 bytes from the specified register of the
 	 * device associated with handle. The amount of returned data is set by the
 	 * device.
-	 * 
+	 *
 	 * @param handle File descriptor from i2cOpen
 	 * @param i2cReg I2C register
 	 * @param buf    Buffer for data read
@@ -124,23 +139,23 @@ public interface PigpioI2CInterface {
 	/**
 	 * This writes data bytes to the specified register of the device associated
 	 * with handle and reads a device specified number of bytes of data in return.
-	 * 
+	 *
 	 * The SMBus 2.0 documentation states that a minimum of 1 byte may be sent and a
 	 * minimum of 1 byte may be received. The total number of bytes sent/received
 	 * must be 32 or less.
-	 * 
+	 *
 	 * Block write-block read. SMBus 2.0 5.5.8
-	 * 
+	 *
 	 * <pre>
 	 * S Addr Wr [A] i2cReg [A] count [A] buf0 [A] ... bufn [A]
 	 *    S Addr Rd [A] [Count] A [buf0] A ... [bufn] A P
 	 * </pre>
-	 * 
+	 *
 	 * @param handle File descriptor from i2cOpen
 	 * @param i2cReg 0-255, the register to write/read
 	 * @param buf    an array with the data to send and to receive the read data
 	 * @param count: 1-32, the number of bytes to write
-	 * 
+	 *
 	 * @return the number of bytes read (&gt;=0) if OK, otherwise PI_BAD_HANDLE,
 	 *         PI_BAD_PARAM, or PI_I2C_READ_FAILED.
 	 */
@@ -149,7 +164,7 @@ public interface PigpioI2CInterface {
 	/**
 	 * This reads count bytes from the specified register of the device associated
 	 * with handle
-	 * 
+	 *
 	 * @param handle File descriptor from i2cOpen
 	 * @param i2cReg I2C register
 	 * @param buf    Buffer for data read
@@ -172,4 +187,14 @@ public interface PigpioI2CInterface {
 
 	/* This writes count bytes from buffer to the raw device */
 	int i2cWriteDevice(int handle, byte[] buffer, int count);
+
+	/**
+	 * This function executes multiple I2C segments in one transaction by calling
+	 * the I2C_RDWR ioctl.
+	 *
+	 * @param handle as returned by a call to i2cOpen
+	 * @param segs   an array of I2C segments
+	 * @return Returns the number of segments if OK, otherwise PI_BAD_I2C_SEG.
+	 */
+	int i2cSegments(int handle, PiI2CMessage[] segs);
 }

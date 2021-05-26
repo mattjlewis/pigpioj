@@ -264,6 +264,14 @@ public class PigpioSocket implements PigpioInterface {
 	 * Response: <code>- - X uint8_t data[X]</code>
 	 */
 	private static final int PI_CMD_I2CPK = 70;
+	/**
+	 * This function executes a sequence of I2C operations. The operations to be
+	 * performed are specified by the contents of inBuf which contains the
+	 * concatenated command codes and associated data.
+	 *
+	 * Request: handle 0 X uint8_t data[X]
+	 */
+	private static final int PI_CMD_I2CZ = 92;
 
 	// SPI Commands
 	/**
@@ -313,7 +321,6 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_BI2CC = 89; // sda 0 0 -
 	private static final int PI_CMD_BI2CO = 90; // sda scl 4 uint32_t baud
 	private static final int PI_CMD_BI2CZ = 91; // sda 0 X uint8_t data[X]
-	private static final int PI_CMD_I2CZ = 92; // handle 0 X uint8_t data[X]
 	private static final int PI_CMD_WVCHA = 93; // 0 0 X uint8_t data[X]
 	private static final int PI_CMD_SLRI = 94; // gpio invert 0 -
 	private static final int PI_CMD_CGI = 95; // 0 0 0 -
@@ -383,42 +390,55 @@ public class PigpioSocket implements PigpioInterface {
 		callbacks = new HashMap<>();
 	}
 
-	public void connect(String host) throws InterruptedException {
+	public void connect(String host) {
 		connect(host, DEFAULT_PORT);
 	}
 
-	public void connect(String host, int port) throws InterruptedException {
+	public void connect(String host, int port) {
 		workerGroup = new NioEventLoopGroup();
 
-		ResponseHandler rh = new ResponseHandler(this::messageReceived);
+		final ResponseDecoder rd = new ResponseDecoder();
+		final NotificationDecoder nd = new NotificationDecoder();
+		final MessageEncoder me = new MessageEncoder();
+		final ResponseHandler rh = new ResponseHandler(this::messageReceived);
+		final NotificationHandler nh = new NotificationHandler(this::notificationReceived);
 
-		Bootstrap b1 = new Bootstrap();
-		b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
-			@Override
-			public void initChannel(SocketChannel ch) throws Exception {
-				ch.pipeline().addLast(new ResponseDecoder(), new MessageEncoder(), rh);
+		try {
+			Bootstrap b1 = new Bootstrap();
+			b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast(rd, me, rh);
+				}
+			});
+
+			// Connect the main request-response message channel
+			messageChannel = b1.connect(host, port).sync().channel();
+
+			Bootstrap b2 = new Bootstrap();
+			b2.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast(nd, me, rh, nh);
+				}
+			});
+
+			// Connect the async notification channel
+			notificationChannel = b2.connect(host, port).sync().channel();
+
+			// Enable notification messages in pigpiod
+			notificationChannel.writeAndFlush(new Message(PI_CMD_NOIB, 0, 0));
+
+			LOGGER.fine("Connected to " + host + " using port " + port);
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error connecting to " + host + ":" + port, e);
+			try {
+				workerGroup.shutdownGracefully().get();
+			} catch (Exception e1) {
+				// Ignore
 			}
-		});
-
-		Bootstrap b2 = new Bootstrap();
-		b2.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
-			@Override
-			public void initChannel(SocketChannel ch) throws Exception {
-				ch.pipeline().addLast(new NotificationDecoder(), new MessageEncoder(), rh,
-						new NotificationHandler(PigpioSocket.this::notificationReceived));
-			}
-		});
-
-		// Connect
-		messageChannel = b1.connect(host, port).sync().channel();
-
-		// Connect
-		notificationChannel = b2.connect(host, port).sync().channel();
-
-		// Enable the notification channel
-		notificationChannel.writeAndFlush(new Message(PI_CMD_NOIB, 0, 0));
-
-		LOGGER.fine("Connected to " + host + " using port " + port);
+			throw new RuntimeException("Error connecting to pigpiod at " + host + ":" + port, e);
+		}
 	}
 
 	@Override
@@ -437,10 +457,14 @@ public class PigpioSocket implements PigpioInterface {
 			if (lastWriteFuture != null) {
 				lastWriteFuture.sync();
 			}
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Error: " + e, e);
 		} finally {
-			workerGroup.shutdownGracefully();
+			try {
+				workerGroup.shutdownGracefully().get();
+			} catch (Exception e) {
+				// Ignore
+			}
 		}
 	}
 
@@ -495,7 +519,7 @@ public class PigpioSocket implements PigpioInterface {
 		try {
 			lastWriteFuture = messageChannel.writeAndFlush(message);
 
-			// FIXME Should really loop until we get the expected response message
+			// Loop until we get the expected response message
 			while (true) {
 				if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
 					rm = messageQueue.remove();
@@ -513,6 +537,7 @@ public class PigpioSocket implements PigpioInterface {
 				}
 			}
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			LOGGER.log(Level.WARNING, "Interrupted: " + e, e);
 		} finally {
 			lock.unlock();
@@ -950,6 +975,39 @@ public class PigpioSocket implements PigpioInterface {
 		return (int) message.res;
 	}
 
+	@Override
+	public int i2cSegments(int handle, PiI2CMessage[] segs) {
+		if (true) {
+			throw new UnsupportedOperationException();
+		}
+		//
+		/*-
+		 * int i2c_zip(int pi, unsigned handle, char *inBuf, unsigned inLen, char *outBuf, unsigned outLen)
+		 *
+		 *     pi: >=0 (as returned by pigpio_start).
+		 * handle: >=0, as returned by a call to i2cOpen
+		 *  inBuf: pointer to the concatenated I2C commands, see below
+		 *  inLen: size of command buffer
+		 * outBuf: pointer to buffer to hold returned data
+		 * outLen: size of output buffer
+		 *
+		 * Use half of the buffer for write, half buffer for read
+		 * if (p[3] > (bufSize/2)) p[3] = bufSize/2;
+		 * i2cZip(p[1], buf, p[3], buf+(bufSize/2), bufSize/2);
+		 * int i2cZip(unsigned handle, char *inBuf, unsigned inLen, char *outBuf, unsigned outLen)
+		 */
+		// TODO Populate the byte buffer
+		byte[] buffer = new byte[10];
+		ResponseMessage message = sendMessage(
+				new Message(PI_CMD_I2CZ, handle, 0, new ByteArrayMessageExtension(segs.length, buffer)));
+		if (message == null) {
+			return PigpioConstants.ERROR;
+		}
+		// TODO Populate the response payload
+
+		return (int) message.res;
+	}
+
 	// SPI
 
 	@Override
@@ -1050,7 +1108,7 @@ public class PigpioSocket implements PigpioInterface {
 		 * length and str ResponseMessage message = sendMessage(new Message(PI_CMD_WVAG,
 		 * userGpio, baud, new ByteArrayMessageExtension())); if (message == null) {
 		 * return PigpioConstants.ERROR; }
-		 * 
+		 *
 		 * return (int) message.res;
 		 */
 		throw new UnsupportedOperationException();
@@ -1494,9 +1552,9 @@ public class PigpioSocket implements PigpioInterface {
 		@Override
 		void encode(ByteBuf out) {
 			for (GpioPulse pulse : pulses) {
-				out.writeInt((int) (pulse.getGpioOn() & 0xffffffff));
-				out.writeInt((int) (pulse.getGpioOff() & 0xffffffff));
-				out.writeInt((int) (pulse.getUsDelay() & 0xffffffff));
+				out.writeInt(pulse.getGpioOn() & 0xffffffff);
+				out.writeInt(pulse.getGpioOff() & 0xffffffff);
+				out.writeInt(pulse.getUsDelay() & 0xffffffff);
 			}
 		}
 	}
@@ -1527,7 +1585,7 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	@FunctionalInterface
-	static interface MessageListener<T> {
+	interface MessageListener<T> {
 		void messageReceived(T message);
 	}
 

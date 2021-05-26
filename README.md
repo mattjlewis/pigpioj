@@ -6,6 +6,7 @@ Note that the primary driver for developing pigpioj was to provide an optimised 
 library for the platform and device independent library [diozero](http://www.diozero.com).
 
 Make sure pigpio is installed on your Raspberry Pi:
+
 ```shell
 sudo apt update && sudo apt -y install pigpio pigpiod pigpio-tools
 ```
@@ -15,6 +16,7 @@ sudo apt update && sudo apt -y install pigpio pigpiod pigpio-tools
 The optimisations within pigpio (using /dev/mem) unfortunately requires root access.
 Because of this all pigpioj applications that use the default JNI mode must be run as root.
 In addition, the pigpio shared library must be installed on the Raspberry Pi; it can be installed by running:
+
 ```shell
 sudo apt update && sudo apt -y install libpigpio1 libpigpiod-if2-1
 ```
@@ -28,6 +30,7 @@ sudo systemctl stop pigpiod.service
 ### Building the Native Library
 
 Make sure that the pigpio development tools are installed:
+
 ```shell
 sudo apt update && sudo apt -y install libpigpiod-if-dev
 ```
@@ -52,19 +55,22 @@ must set the PIGPIOD_HOST variable, either via environment property or Java comm
 Examples:
 
 Command line:
+
 ```shell
-java -DPIGPIOD_HOST=<<your-pigpiod-host>> -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
+java -DPIGPIOD_HOST=«your-pigpiod-host» -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
 ```
 
 Sockets mode is enabled by setting the `PIGPIOD_HOST` variable, either via the command
 line or as an environment variable.
 
 Command line:
+
 ```shell
-java -DPIGPIOD_HOST=<<raspberry-pi-hostname-or-ip-address>> -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
+java -DPIGPIOD_HOST=«raspberry-pi-hostname-or-ip-address» -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
 ```
 
 Environment variable:
+
 ```shell
 export PIGPIOD_HOST=<raspberry-pi-hostname-or-ip-address>>
 java -cp pigpioj-2.5.4.jar:<<your-app.jar>> <<your-main-class>>
@@ -86,14 +92,20 @@ same APIs to run applications on another machine, including a any laptop or desk
 For security reasons, the pigpiod daemon process can be limited to allow only local connections.
 Check the `ExecStart` parameter in `/etc/systemd/system/pigpiod.service.d/public.conf`.
 If it has the `-l` option then it will only allow connections from the local machine, e.g.:
+
 ```
 ExecStart=/usr/bin/pigpiod -l
 ```
 
 To change this behaviour, simply remove the `-l` parameter from this file and restart the process:
+
 ```shell
 sudo systemctl restart pigpiod.service
 ```
+
+If the file doesn't exist, run the `raspi-config` application and choose "3 Interface Options",
+"P8 Remote GPIO" and select "Yes". This will make the appropriate changes and create that file if
+it didn't already exist.
 
 ## Example Application
 

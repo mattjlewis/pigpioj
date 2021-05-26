@@ -69,7 +69,8 @@ public class PigpioJNI implements PigpioInterface {
 
 	@Override
 	public int enableListener(int gpio, int edge, PigpioCallback callback) {
-		// Note that setISRFunc uses the underlying Linux sysfs GPIO interface for interrupts.
+		// Note that setISRFunc uses the underlying Linux sysfs GPIO interface for
+		// interrupts.
 		// The glitch filter has no affect - use setAlertFunc instead
 		return PigpioGpio.setISRFunc(gpio, edge, -1, callback);
 	}
@@ -262,6 +263,12 @@ public class PigpioJNI implements PigpioInterface {
 	@Override
 	public int i2cWriteDevice(int handle, byte[] buffer, int count) {
 		return PigpioI2C.i2cWriteDevice(handle, buffer, count);
+	}
+
+	@Override
+	public int i2cSegments(int handle, PiI2CMessage[] segs) {
+		//return PigpioI2C.i2cSegments(handle, segs);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -216,3 +216,13 @@ JNIEXPORT void JNICALL Java_uk_pigpioj_PigpioI2C_i2cSwitchCombined
   (JNIEnv* env, jclass clz, jboolean setting) {
 	i2cSwitchCombined(setting);
 }
+
+/*
+ * Class:     uk_pigpioj_PigpioI2C
+ * Method:    i2cSegments
+ * Signature: (I[Luk/pigpioj/PiI2CMessage;)I
+ */
+JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cSegments
+  (JNIEnv *, jclass, jint, jobjectArray) {
+  return -1;
+}
