@@ -114,7 +114,7 @@
 		<eclipse.m2e.lifecycle-mapping.version>1.0.0</eclipse.m2e.lifecycle-mapping.version>
 
 		<!-- Libraries -->
-		<netty.version>4.1.64.Final</netty.version>
+		<netty.version>4.1.65.Final</netty.version>
 	</properties>
 	
 	<dependencies>
