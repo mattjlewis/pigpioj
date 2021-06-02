@@ -2,6 +2,10 @@
 
 #include "pigpioj_util.h"
 
+extern jfieldID i2cMessageAddrField;
+extern jfieldID i2cMessageFlagsField;
+extern jfieldID i2cMessageLenField;
+
 /*
  * Class:     uk_pigpioj_PigpioI2C
  * Method:    i2cOpen
@@ -220,9 +224,31 @@ JNIEXPORT void JNICALL Java_uk_pigpioj_PigpioI2C_i2cSwitchCombined
 /*
  * Class:     uk_pigpioj_PigpioI2C
  * Method:    i2cSegments
- * Signature: (I[Luk/pigpioj/PiI2CMessage;)I
+ * Signature: (I[Luk/pigpioj/PiI2CMessage;[B)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioI2C_i2cSegments
-  (JNIEnv *, jclass, jint, jobjectArray) {
-  return -1;
+  (JNIEnv* env, jclass clz, jint handle, jobjectArray segments, jbyteArray buffer) {
+	int num_segs = (*env)->GetArrayLength(env, segments);
+	jbyte* data = (*env)->GetByteArrayElements(env, buffer, NULL);
+
+	pi_i2c_msg_t segs[num_segs];
+
+	int offset = 0;
+	int i;
+	for (i=0; i<num_segs; i++) {
+		jobject segment = (*env)->GetObjectArrayElement(env, segments, i);
+
+		segs[i].addr = (uint16_t) (*env)->GetIntField(env, segment, i2cMessageAddrField);
+		segs[i].flags = (uint16_t) (*env)->GetIntField(env, segment, i2cMessageFlagsField);
+		segs[i].len = (uint16_t) (*env)->GetIntField(env, segment, i2cMessageLenField);
+		segs[i].buf = (uint8_t*) &data[offset];
+
+		offset += segs[i].len;
+	}
+
+	int rc = i2cSegments(handle, segs, num_segs);
+
+	(*env)->ReleaseByteArrayElements(env, buffer, data, 0);
+
+	return rc;
 }

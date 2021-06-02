@@ -266,9 +266,8 @@ public class PigpioJNI implements PigpioInterface {
 	}
 
 	@Override
-	public int i2cSegments(int handle, PiI2CMessage[] segs) {
-		//return PigpioI2C.i2cSegments(handle, segs);
-		throw new UnsupportedOperationException();
+	public int i2cSegments(int handle, PiI2CMessage[] segs, byte[] buffer) {
+		return PigpioI2C.i2cSegments(handle, segs, buffer);
 	}
 
 	@Override

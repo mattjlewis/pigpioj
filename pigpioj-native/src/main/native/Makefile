@@ -16,7 +16,7 @@ STRIPLIB     = $(STRIP) --strip-unneeded
 
 CFLAGS       := -O3 -Wall -pthread -fPIC -march=$(ARCH) $(CC_CFLAGS)
 
-INCLUDES	   = -I/$(JAVA_HOME)/include -I/$(JAVA_HOME)/include/linux -I$(HOME)/pigpio
+INCLUDES	   = -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(HOME)/pigpio
 
 LFLAGS       = -L$(HOME)/pigpio/$(ARCH)
 

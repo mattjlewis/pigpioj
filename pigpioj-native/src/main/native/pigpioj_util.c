@@ -15,6 +15,10 @@ jfieldID gpioOffFieldId;
 jfieldID usDelayFieldId;
 jclass pigpioCallbackClass;
 jmethodID callbackMethodId;
+jclass i2cMessageClass;
+jfieldID i2cMessageAddrField;
+jfieldID i2cMessageFlagsField;
+jfieldID i2cMessageLenField;
 
 jobject listeners[MAX_GPIO_PINS];
 
@@ -91,6 +95,24 @@ jint JNI_OnLoad(JavaVM* jvm, void* reserved) {
 		fprintf(stderr, "PigpioUtil: Error: Unable to get callback methodId in PigpioCallback class\n");
 		return JNI_ERR;
 	}
+
+	// Cache the I2CMessage class and fields on startup
+	class_name = "uk/pigpioj/PiI2CMessage";
+	jclass i2c_message_class = (*env)->FindClass(env, class_name);
+	if ((*env)->ExceptionCheck(env) || i2c_message_class == NULL) {
+		fprintf(stderr, "Error, could not find class '%s'\n", class_name);
+		return JNI_ERR;
+	}
+	char* field_name = "addr";
+	char* signature = "I";
+	i2cMessageAddrField = (*env)->GetFieldID(env, i2c_message_class, field_name, signature);
+	field_name = "flags";
+	signature = "I";
+	i2cMessageFlagsField = (*env)->GetFieldID(env, i2c_message_class, field_name, signature);
+	field_name = "len";
+	signature = "I";
+	i2cMessageLenField = (*env)->GetFieldID(env, i2c_message_class, field_name, signature);
+	(*env)->DeleteLocalRef(env, i2c_message_class);
 
 	globalJavaVM = jvm;
 

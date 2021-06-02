@@ -175,7 +175,8 @@ public class PigpioI2C {
 	 *
 	 * @param handle as returned by a call to i2cOpen
 	 * @param segs   an array of I2C segments
+	 * @param buffer data buffer
 	 * @return Returns the number of segments if OK, otherwise PI_BAD_I2C_SEG.
 	 */
-	public static native int i2cSegments(int handle, PiI2CMessage[] segs);
+	public static native int i2cSegments(int handle, PiI2CMessage[] segs, byte[] buffer);
 }

@@ -192,9 +192,10 @@ public interface PigpioI2CInterface {
 	 * This function executes multiple I2C segments in one transaction by calling
 	 * the I2C_RDWR ioctl.
 	 *
-	 * @param handle as returned by a call to i2cOpen
-	 * @param segs   an array of I2C segments
+	 * @param handle   as returned by a call to i2cOpen
+	 * @param messages an array of I2C messages
+	 * @param buffer   data buffer
 	 * @return Returns the number of segments if OK, otherwise PI_BAD_I2C_SEG.
 	 */
-	int i2cSegments(int handle, PiI2CMessage[] segs);
+	int i2cSegments(int handle, PiI2CMessage[] messages, byte[] buffer);
 }

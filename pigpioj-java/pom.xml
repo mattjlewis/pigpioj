@@ -3,7 +3,7 @@
 
 	<groupId>uk.pigpioj</groupId>
 	<artifactId>pigpioj-java</artifactId>
-	<version>2.5.8</version>
+	<version>2.5.9</version>
 	<name>pigpio Java wrapper</name>
 	<description>Java wrapper around pigpio (http://abyz.me.uk/rpi/pigpio/)</description>
 	<url>https://github.com/mattjlewis/pigpioj</url>

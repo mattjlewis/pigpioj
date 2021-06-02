@@ -976,7 +976,7 @@ public class PigpioSocket implements PigpioInterface {
 	}
 
 	@Override
-	public int i2cSegments(int handle, PiI2CMessage[] segs) {
+	public int i2cSegments(int handle, PiI2CMessage[] segs, byte[] data) {
 		if (true) {
 			throw new UnsupportedOperationException();
 		}
