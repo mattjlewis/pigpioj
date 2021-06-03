@@ -553,7 +553,7 @@ public class PigpioSocket implements PigpioInterface {
 					// Shouldn't happen
 					LOGGER.warning("Unexpected response: " + rm + ". Was expecting " + message.cmd);
 				} else {
-					String msg = "Timeout or interrupt waiting for response to command " + message.cmd;
+					String msg = "Timeout waiting for response to command " + message.cmd;
 					LOGGER.severe(msg);
 					throw new TimeoutException(msg);
 				}
