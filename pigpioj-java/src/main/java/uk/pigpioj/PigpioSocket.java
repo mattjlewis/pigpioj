@@ -1,14 +1,13 @@
 package uk.pigpioj;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +18,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -30,6 +30,7 @@ import io.netty.handler.codec.ReplayingDecoder;
 
 public class PigpioSocket implements PigpioInterface {
 	static final Logger LOGGER = Logger.getLogger(PigpioSocket.class.getName());
+
 	private static final int DEFAULT_TIMEOUT_MS = 30_000;
 	private static final int NOTIFICATION_HANDLE_NOT_SET = -1;
 
@@ -269,7 +270,8 @@ public class PigpioSocket implements PigpioInterface {
 	 * performed are specified by the contents of inBuf which contains the
 	 * concatenated command codes and associated data.
 	 *
-	 * Request: handle 0 X uint8_t data[X]
+	 * Request: <code>handle 0 X uint8_t data[X]</code><br>
+	 * Response: ??
 	 */
 	private static final int PI_CMD_I2CZ = 92;
 
@@ -355,18 +357,41 @@ public class PigpioSocket implements PigpioInterface {
 	private static final int PI_CMD_PROCU = 117;
 	private static final int PI_CMD_WVCAP = 118;
 
-	/*
-	 * pigpiod_if2 Error Codes typedef enum { pigif_bad_send = -2000, pigif_bad_recv
-	 * = -2001, pigif_bad_getaddrinfo = -2002, pigif_bad_connect = -2003,
-	 * pigif_bad_socket = -2004, pigif_bad_noib = -2005, pigif_duplicate_callback =
-	 * -2006, pigif_bad_malloc = -2007, pigif_bad_callback = -2008,
-	 * pigif_notify_failed = -2009, pigif_callback_not_found = -2010,
-	 * pigif_unconnected_pi = -2011, pigif_too_many_pis = -2012, } pigifError_t;
-	 */
+	/* bbI2CZip and i2cZip commands */
+	private static final byte PI_I2C_END = 0;
+	private static final byte PI_I2C_ESC = 1;
+	private static final byte PI_I2C_START = 2;
+	private static final byte PI_I2C_COMBINED_ON = 2;
+	private static final byte PI_I2C_STOP = 3;
+	private static final byte PI_I2C_COMBINED_OFF = 3;
+	private static final byte PI_I2C_ADDR = 4;
+	private static final byte PI_I2C_FLAGS = 5;
+	private static final byte PI_I2C_READ = 6;
+	private static final byte PI_I2C_WRITE = 7;
 
-	private Queue<ResponseMessage> messageQueue;
-	private Lock lock;
-	private Condition condition;
+	private static final int PIGPIOJ_CMD_EXIT = -999;
+
+	/*-
+	 * pigpiod_if2
+	 * Error Codes
+	typedef enum {
+	  pigif_bad_send = -2000,
+	  pigif_bad_recv = -2001,
+	  pigif_bad_getaddrinfo = -2002,
+	  pigif_bad_connect = -2003,
+	  pigif_bad_socket = -2004,
+	  pigif_bad_noib = -2005,
+	  pigif_duplicate_callback = -2006,
+	  pigif_bad_malloc = -2007,
+	  pigif_bad_callback = -2008,
+	  pigif_notify_failed = -2009,
+	  pigif_callback_not_found = -2010,
+	  pigif_unconnected_pi = -2011,
+	  pigif_too_many_pis = -2012,
+	} pigifError_t;
+	*/
+
+	private BlockingQueue<ResponseMessage> messageQueue;
 	private EventLoopGroup workerGroup;
 	private Channel messageChannel;
 	private Channel notificationChannel;
@@ -384,9 +409,7 @@ public class PigpioSocket implements PigpioInterface {
 	public PigpioSocket(int timeoutMs) {
 		this.timeoutMs = timeoutMs;
 
-		messageQueue = new LinkedList<>();
-		lock = new ReentrantLock();
-		condition = lock.newCondition();
+		messageQueue = new LinkedBlockingQueue<>();
 		callbacks = new HashMap<>();
 	}
 
@@ -397,31 +420,29 @@ public class PigpioSocket implements PigpioInterface {
 	public void connect(String host, int port) {
 		workerGroup = new NioEventLoopGroup();
 
-		final ResponseDecoder rd = new ResponseDecoder();
-		final NotificationDecoder nd = new NotificationDecoder();
-		final MessageEncoder me = new MessageEncoder();
-		final ResponseHandler rh = new ResponseHandler(this::messageReceived);
-		final NotificationHandler nh = new NotificationHandler(this::notificationReceived);
-
 		try {
+			final MessageEncoder me = new MessageEncoder();
+
+			final ResponseHandler rh = new ResponseHandler(this::messageReceived);
 			Bootstrap b1 = new Bootstrap();
 			b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(rd, me, rh);
+					ch.pipeline().addLast(me, new ResponseDecoder(), rh);
 				}
-			});
+			}).option(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
 			// Connect the main request-response message channel
 			messageChannel = b1.connect(host, port).sync().channel();
 
+			final NotificationHandler nh = new NotificationHandler(this::notificationReceived);
 			Bootstrap b2 = new Bootstrap();
 			b2.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(nd, me, rh, nh);
+					ch.pipeline().addLast(me, new NotificationDecoder(), nh);
 				}
-			});
+			}).option(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
 			// Connect the async notification channel
 			notificationChannel = b2.connect(host, port).sync().channel();
@@ -433,7 +454,7 @@ public class PigpioSocket implements PigpioInterface {
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Error connecting to " + host + ":" + port, e);
 			try {
-				workerGroup.shutdownGracefully().get();
+				workerGroup.shutdownGracefully().sync();
 			} catch (Exception e1) {
 				// Ignore
 			}
@@ -447,11 +468,15 @@ public class PigpioSocket implements PigpioInterface {
 			return;
 		}
 
+		// Send a poison "quit" message to the message queue to safely wake it up
+		messageQueue.offer(new ResponseMessage(PIGPIOJ_CMD_EXIT, 0, 0, 0));
+
 		messageChannel.close();
 		notificationChannel.close();
 
 		try {
 			messageChannel.closeFuture().sync();
+			notificationChannel.closeFuture().sync();
 
 			// Wait until all messages are flushed before closing the channel.
 			if (lastWriteFuture != null) {
@@ -461,7 +486,7 @@ public class PigpioSocket implements PigpioInterface {
 			LOGGER.log(Level.WARNING, "Error: " + e, e);
 		} finally {
 			try {
-				workerGroup.shutdownGracefully().get();
+				workerGroup.shutdownGracefully().sync();
 			} catch (Exception e) {
 				// Ignore
 			}
@@ -478,13 +503,7 @@ public class PigpioSocket implements PigpioInterface {
 			return;
 		}
 
-		lock.lock();
-		try {
-			messageQueue.add(msg);
-			condition.signalAll();
-		} finally {
-			lock.unlock();
-		}
+		messageQueue.offer(msg);
 	}
 
 	void notificationReceived(NotificationMessage msg) {
@@ -515,15 +534,18 @@ public class PigpioSocket implements PigpioInterface {
 	private synchronized ResponseMessage sendMessage(Message message) {
 		ResponseMessage rm = null;
 
-		lock.lock();
 		try {
 			lastWriteFuture = messageChannel.writeAndFlush(message);
 
 			// Loop until we get the expected response message
-			while (true) {
-				if (condition.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-					rm = messageQueue.remove();
+			while (!Thread.interrupted()) {
+				rm = messageQueue.poll(timeoutMs, TimeUnit.MILLISECONDS);
 
+				if (rm != null) {
+					if (rm.cmd == PIGPIOJ_CMD_EXIT) {
+						rm = null;
+						break;
+					}
 					if (rm.cmd == message.cmd) {
 						break;
 					}
@@ -531,16 +553,15 @@ public class PigpioSocket implements PigpioInterface {
 					// Shouldn't happen
 					LOGGER.warning("Unexpected response: " + rm + ". Was expecting " + message.cmd);
 				} else {
-					String msg = "Timeout waiting for response to command " + message.cmd;
+					String msg = "Timeout or interrupt waiting for response to command " + message.cmd;
 					LOGGER.severe(msg);
 					throw new TimeoutException(msg);
 				}
 			}
 		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			LOGGER.log(Level.WARNING, "Interrupted: " + e, e);
-		} finally {
-			lock.unlock();
+			// Ignore or rethrow??
+			// Thread.currentThread().interrupt();
+			LOGGER.log(Level.WARNING, "Interrupted waiting on message queue...: " + e, e);
 		}
 
 		return rm;
@@ -977,10 +998,6 @@ public class PigpioSocket implements PigpioInterface {
 
 	@Override
 	public int i2cSegments(int handle, PiI2CMessage[] segs, byte[] data) {
-		if (true) {
-			throw new UnsupportedOperationException();
-		}
-		//
 		/*-
 		 * int i2c_zip(int pi, unsigned handle, char *inBuf, unsigned inLen, char *outBuf, unsigned outLen)
 		 *
@@ -991,19 +1008,122 @@ public class PigpioSocket implements PigpioInterface {
 		 * outBuf: pointer to buffer to hold returned data
 		 * outLen: size of output buffer
 		 *
-		 * Use half of the buffer for write, half buffer for read
-		 * if (p[3] > (bufSize/2)) p[3] = bufSize/2;
-		 * i2cZip(p[1], buf, p[3], buf+(bufSize/2), bufSize/2);
+		 * res = i2cZip(p[1], buf, p[3], buf+(bufSize/2), bufSize/2);
 		 * int i2cZip(unsigned handle, char *inBuf, unsigned inLen, char *outBuf, unsigned outLen)
+		 *
+		 * Example:
+		 * Set address 0x53,  write 0x32,          read 6 bytes
+		 * Set address 0x1E,  write 0x03,          read 7 bytes
+		 * Set address 0x68,  Flags NO_START (0x4000),  write 0x1B 0x1A,     read 8 bytes
+		 * End
+		 * 0x04 0x53          0x07 0x01 0x32       0x06 0x06
+		 * 0x04 0x1E          0x07 0x01 0x03       0x06 0x07
+		 * 0x04 0x68          0x05 0x00 0x40            0x07 0x02 0x1B 0x1A  0x06 0x08
+		 * 0x00
 		 */
-		// TODO Populate the byte buffer
-		byte[] buffer = new byte[10];
+
+		byte[] buffer;
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			int data_offset = 0;
+			for (PiI2CMessage seg : segs) {
+				// Note pigpio allows addr to be skipped if unchanged...
+				baos.write(PI_I2C_ADDR);
+				baos.write(seg.getAddr());
+
+				// Handle 16-bit I2C flags that aren't just read (1) / write (0)
+				if (seg.getFlags() > 1) {
+					baos.write(PI_I2C_FLAGS);
+					// LSB
+					baos.write(seg.getFlags() & 0xff);
+					// MSB
+					baos.write((seg.getFlags() >> 8) & 0xff);
+				}
+
+				if ((seg.getFlags() & 0x01) == 0) {
+					// Write
+					baos.write(PI_I2C_WRITE);
+					baos.write(seg.getLen());
+					baos.write(data, data_offset, seg.getLen());
+				} else {
+					// Read
+					baos.write(PI_I2C_READ);
+					baos.write((byte) seg.getLen());
+				}
+
+				data_offset += seg.getLen();
+			}
+
+			baos.write(PI_I2C_END);
+			baos.flush();
+
+			buffer = baos.toByteArray();
+		} catch (IOException e) {
+			LOGGER.log(Level.WARNING, "Error writing to ByteArrayOutputStream: " + e, e);
+			return -1;
+		}
+
+		/*-
+		 * Doesn't remove read bytes from the capacity or handle flags
+		 *
+		// Assume that addresses are always sent even if the same
+		int capacity = segs.length * 2; // ADDR command + addr
+		// Every message is either read or write
+		capacity += segs.length * 2; // READ/WRITE byte command + len
+		// Handle capacity requirement for read / write data
+		capacity += data.length;
+		// Finally 1 byte for the END command
+		capacity += 1;
+		
+		ByteBuffer bb = ByteBuffer.allocate(capacity);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+
+		int data_offset = 0;
+		for (PiI2CMessage seg : segs) {
+			bb.put(PI_I2C_ADDR);
+			bb.put((byte) seg.getAddr());
+			// TODO Handle I2C flags
+			// bb.put(PI_I2C_FLAGS);
+			// bb.putShort((short) seg.getFlags());
+			if ((seg.getFlags() & 0x01) == 0) {
+				// Write
+				bb.put(PI_I2C_WRITE);
+				bb.put((byte) seg.getLen());
+				bb.put(data, data_offset, seg.getLen());
+				data_offset += seg.getLen();
+			} else {
+				// Read
+				bb.put(PI_I2C_READ);
+				bb.put((byte) seg.getLen());
+				data_offset += seg.getLen();
+			}
+		}
+		bb.put(PI_I2C_END);
+
+		bb.flip();
+
+		byte[] buffer = new byte[bb.limit()];
+		bb.get(buffer);
+		*/
+
 		ResponseMessage message = sendMessage(
-				new Message(PI_CMD_I2CZ, handle, 0, new ByteArrayMessageExtension(segs.length, buffer)));
+				new Message(PI_CMD_I2CZ, handle, 0, new ByteArrayMessageExtension(buffer)));
 		if (message == null) {
 			return PigpioConstants.ERROR;
 		}
-		// TODO Populate the response payload
+
+		ByteArrayResponseMessage bam = (ByteArrayResponseMessage) message;
+		byte[] resp_data = bam.data;
+
+		int data_offset = 0;
+		int resp_data_pos = 0;
+		for (PiI2CMessage seg : segs) {
+			if ((seg.getFlags() & 0x01) == 1) {
+				// Read
+				System.arraycopy(resp_data, resp_data_pos, data, data_offset, seg.getLen());
+				resp_data_pos += seg.getLen();
+			}
+			data_offset += seg.getLen();
+		}
 
 		return (int) message.res;
 	}
@@ -1589,6 +1709,7 @@ public class PigpioSocket implements PigpioInterface {
 		void messageReceived(T message);
 	}
 
+	@Sharable
 	static class MessageEncoder extends MessageToByteEncoder<Message> {
 		@Override
 		protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
@@ -1605,6 +1726,7 @@ public class PigpioSocket implements PigpioInterface {
 	static class ResponseDecoder extends ByteToMessageDecoder {
 		@Override
 		protected void decode(ChannelHandlerContext context, ByteBuf buf, List<Object> out) {
+			// Must be a minimum of 4 32-bit integers available to read
 			if (buf.readableBytes() < 4 * 4) {
 				return;
 			}
@@ -1722,7 +1844,6 @@ public class PigpioSocket implements PigpioInterface {
 		}
 	}
 
-	@Sharable
 	static class ResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
 		private MessageListener<ResponseMessage> listener;
 
