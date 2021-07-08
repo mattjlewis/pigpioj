@@ -38,10 +38,10 @@ void callbackFunction(int gpio, int level, uint32_t tick) {
 /*
  * Class:     uk_pigpioj_PigpioGpio
  * Method:    initialise
- * Signature: ()I
+ * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_initialise
-  (JNIEnv* env, jclass clz) {
+  (JNIEnv* env, jclass clz, jint clockCfgMicros, jint clockCfgPeripheral) {
 	int i;
 	for (i = 0; i < MAX_GPIO_PINS; i++) {
 		listeners[i] = NULL;
@@ -58,6 +58,14 @@ JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_initialise
 	if (rc < 0) {
 		fprintf(stderr, "Error in gpioCfgInterfaces: %d\n", rc);
 		return -1;
+	}
+
+	if (clockCfgMicros != -1 && clockCfgPeripheral != -1) {
+		rc = gpioCfgClock(clockCfgMicros, clockCfgPeripheral, 0);
+		if (rc < 0) {
+			fprintf(stderr, "Error in gpioCfgClock: %d\n", rc);
+			return -1;
+		}
 	}
 
 	rc = gpioInitialise();

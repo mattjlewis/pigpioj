@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     uk_pigpioj_PigpioGpio
  * Method:    initialise
- * Signature: ()I
+ * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_uk_pigpioj_PigpioGpio_initialise
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jint, jint);
 
 /*
  * Class:     uk_pigpioj_PigpioGpio

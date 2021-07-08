@@ -34,9 +34,16 @@ public class PigpioGpio {
 	/**
 	 * Initialises the library, call before using the other library functions.
 	 *
+	 * For clock config parameters see <a href=
+	 * "http://abyz.me.uk/rpi/pigpio/cif.html#gpioCfgClock">gpioCfgClock</a>.
+	 * gpioCfgClock is only invoked if <strong>both</strong> clockCfgMicros and
+	 * clockCfgPeripheral are != -1.
+	 *
+	 * @param clockCfgMicros     Sample rate, set to -1 to keep as-is
+	 * @param clockCfgPeripheral 0 (PWM), 1 (PCM), -1 keep as-is
 	 * @return the pigpio version number if OK
 	 */
-	public static native int initialise();
+	public static native int initialise(int clockCfgMicros, int clockCfgPeripheral);
 
 	/** Terminates the library */
 	public static native void terminate();
