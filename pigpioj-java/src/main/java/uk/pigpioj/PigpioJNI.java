@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 
 public class PigpioJNI implements PigpioInterface {
 	private static final Logger LOGGER = Logger.getLogger(PigpioJNI.class.getName());
+	private static final String PIGPIO_CLOCK_CFG_MICROS = "PIGPIO_CLOCK_CFG_MICROS";
+	private static final String PIGPIO_CLOCK_CFG_PERIPHERAL = "PIGPIO_CLOCK_CFG_PERIPHERAL";
 	private static final String LIB_NAME = "pigpioj";
 	private static AtomicBoolean loaded = new AtomicBoolean();
 
@@ -17,25 +19,28 @@ public class PigpioJNI implements PigpioInterface {
 
 			loaded.set(true);
 
-			String clock_cfg_micros_s = System.getProperties().getProperty("PIGPIO_CLOCK_CFG_MICROS");
+			String clock_cfg_micros_s = PigpioJ.getProperty(PIGPIO_CLOCK_CFG_MICROS);
 			int clock_cfg_micros = -1;
 			if (clock_cfg_micros_s != null) {
 				try {
 					clock_cfg_micros = Integer.parseInt(clock_cfg_micros_s);
 				} catch (NumberFormatException e) {
-					LOGGER.log(Level.WARNING, "Invalid PIGPIO_CLOCK_CFG_MICROS value '" + clock_cfg_micros_s + "'");
+					LOGGER.log(Level.WARNING,
+							"Invalid " + PIGPIO_CLOCK_CFG_MICROS + " value '" + clock_cfg_micros_s + "'");
 				}
 			}
-			String clock_cfg_peripheral_s = System.getProperties().getProperty("PIGPIO_CLOCK_CFG_PERIPHERAL");
+
+			String clock_cfg_peripheral_s = PigpioJ.getProperty(PIGPIO_CLOCK_CFG_PERIPHERAL);
 			int clock_cfg_peripheral = -1;
 			if (clock_cfg_peripheral_s != null) {
 				try {
 					clock_cfg_peripheral = Integer.parseInt(clock_cfg_peripheral_s);
 				} catch (NumberFormatException e) {
 					LOGGER.log(Level.WARNING,
-							"Invalid PIGPIO_CLOCK_CFG_PERIPHERAL value '" + clock_cfg_peripheral_s + "'");
+							"Invalid " + PIGPIO_CLOCK_CFG_PERIPHERAL + " value '" + clock_cfg_peripheral_s + "'");
 				}
 			}
+
 			return PigpioGpio.initialise(clock_cfg_micros, clock_cfg_peripheral);
 		}
 

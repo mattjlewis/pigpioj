@@ -29,7 +29,7 @@ public class PigpioJ {
 		return pigpioImpl;
 	}
 
-	private static String getProperty(String property) {
+	static String getProperty(String property) {
 		// -D parameter takes priority over environment parameter
 		String value = System.getProperty(property);
 		if (value == null) {
