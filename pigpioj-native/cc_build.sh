@@ -2,24 +2,33 @@
 
 cd src/main/native
 LIB_DIR=../../../lib
+LIB_NAME=libpigpioj.so
 
 # aarch64
-make clean && make CROSS_PREFIX=aarch64-linux-gnu- ARCH=armv8-a
+echo "Compiling for AArch64"
+make clean && make CROSS_PREFIX=aarch64-linux-gnu- CFLAGS="-march=armv8-a"
 if [ $? -eq 0 ]; then
-  TARGET=${LIB_DIR}/linux-aarch64 && mkdir -p ${TARGET} && mv libpigpioj.so ${TARGET}/.
+  TARGET=${LIB_DIR}/linux-aarch64 && mkdir -p ${TARGET} && mv ${LIB_NAME} ${TARGET}/.
+  make clean
 fi
+echo
 
 # armv7
-make clean && make CROSS_PREFIX=arm-linux-gnueabihf- ARCH=armv7 CC_CFLAGS="-mfpu=vfp -mfloat-abi=hard"
+echo "Compiling for ARMv7"
+make clean && make CROSS_PREFIX=arm-linux-gnueabihf- CFLAGS="-mfpu=vfp -mfloat-abi=hard -march=armv7"
 if [ $? -eq 0 ]; then
-  TARGET=${LIB_DIR}/linux-armv7 && mkdir -p ${TARGET} && mv libpigpioj.so ${TARGET}/.
+  TARGET=${LIB_DIR}/linux-armv7 && mkdir -p ${TARGET} && mv ${LIB_NAME} ${TARGET}/.
+  make clean
 fi
+echo
 
 # Finally build armv6 to be extra sure that PATH has no reference to the Pi armv6 cross compiler
+echo "Compiling for ARMv6"
 OLD_PATH=${PATH}
-PATH=${PI_GCC_TARGET_DIR}/bin:${PATH} && make clean && make CROSS_PREFIX=arm-linux-gnueabihf- ARCH=armv6 CC_CFLAGS="-mfpu=vfp -mfloat-abi=hard"
+PATH=${PI_GCC_TARGET_DIR}/bin:${PATH} && make clean && make CROSS_PREFIX=arm-linux-gnueabihf- CFLAGS="-mfpu=vfp -mfloat-abi=hard -march=armv6"
 if [ $? -eq 0 ]; then
-  TARGET=${LIB_DIR}/linux-armv6 && mkdir -p ${TARGET} && mv libpigpioj.so ${TARGET}/.
+  TARGET=${LIB_DIR}/linux-armv6 && mkdir -p ${TARGET} && mv ${LIB_NAME} ${TARGET}/.
+  make clean
 fi
 PATH=${OLD_PATH}
 

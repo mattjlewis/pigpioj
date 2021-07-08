@@ -1,58 +1,23 @@
 package uk.pigpioj;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PigpioJNI implements PigpioInterface {
-	private static final Logger LOGGER = Logger.getLogger(PigpioJNI.class.getName());
 	private static final String LIB_NAME = "pigpioj";
-	private static boolean loaded;
+	private static AtomicBoolean loaded = new AtomicBoolean();
 
-	@SuppressWarnings("resource")
 	public static synchronized int initialise() {
-		if (!loaded) {
-			String lib_name = LIB_NAME + "-" + System.getProperty("os.arch");
-			InputStream is = PigpioJ.class.getResourceAsStream("/lib/lib" + lib_name + ".so");
-			if (is != null) {
-				try {
-					Path path = Files.createTempFile("lib" + lib_name, ".so");
-					path.toFile().deleteOnExit();
-					Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
-					Runtime.getRuntime().load(path.toString());
-					loaded = true;
-				} catch (Throwable t) {
-					LOGGER.log(Level.WARNING, "Error loading library from classpath, trying System.loadLibrary: " + t,
-							t);
-				} finally {
-					try {
-						is.close();
-					} catch (IOException e) {
-						// Ignore
-					}
-				}
-			}
-			if (!loaded) {
-				// Try load from the Java system library path (-Djava.library.path)
-				try {
-					System.loadLibrary(LIB_NAME);
-					loaded = true;
-				} catch (Throwable t) {
-					LOGGER.log(Level.SEVERE, "Error loading pigpioj library from system library path: " + t, t);
-				}
+		if (!loaded.get()) {
+			if (!LibraryUtil.loadLibrary(LIB_NAME, PigpioJNI.class)) {
+				throw new RuntimeException("Error loading native library '" + LIB_NAME + "'");
 			}
 
-			if (loaded) {
-				int rc = PigpioGpio.initialise();
-				return rc;
-			}
+			loaded.set(true);
+
+			return PigpioGpio.initialise();
 		}
 
-		return loaded ? PigpioConstants.SUCCESS : PigpioConstants.ERROR;
+		return loaded.get() ? PigpioConstants.SUCCESS : PigpioConstants.ERROR;
 	}
 
 	public PigpioJNI() {
