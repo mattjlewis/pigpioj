@@ -19,8 +19,8 @@ pigpioj has two modes of operation:
 
 The JNI mode requires a small system library to be loaded at runtime that allows Java to invoke the
 [pigpio C interface](http://abyz.me.uk/rpi/pigpio/cif.html). This library is packaged in the pigpioj
-JAR file and is loaded automatically when [uk.pigpioj.PigpioJ.getImplementation()]
-(https://github.com/mattjlewis/pigpioj/blob/3e274d46892d58e4be38d454c031d50a4e31ef81/pigpioj-java/src/main/java/uk/pigpioj/PigpioJ.java#L9)
+JAR file and is loaded automatically when (uk.pigpioj.PigpioJ.getImplementation())
+[https://github.com/mattjlewis/pigpioj/blob/3e274d46892d58e4be38d454c031d50a4e31ef81/pigpioj-java/src/main/java/uk/pigpioj/PigpioJ.java#L9]
 is invoked.
 
 pigpioj provides native libraries that are compiled for ARMv6, ARMv7 and AArch64 CPU architectures
