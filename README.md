@@ -1,7 +1,6 @@
 # About
 
 pigpioj is a Java wrapper around the excellent Raspberry Pi C library [pigpio](http://abyz.me.uk/rpi/pigpio/).
-It supports two modes for interfacing with pigpio; JNI (the default) and Sockets.
 Note that the primary driver for developing pigpioj was to provide an optimised hardware interface
 library for the platform and device independent library [diozero](http://www.diozero.com).
 
@@ -19,14 +18,18 @@ pigpioj has two modes of operation:
 ## JNI
 
 The JNI mode requires a small system library to be loaded at runtime that allows Java to invoke the
-pigpio C interface. This library is packaged in the pigpioj JAR file and is loaded automatically
-when `uk.pigpioj.PigpioJ.getImplementation()` is called.
+[pigpio C interface](http://abyz.me.uk/rpi/pigpio/cif.html). This library is packaged in the pigpioj
+JAR file and is loaded automatically when [uk.pigpioj.PigpioJ.getImplementation()]
+(https://github.com/mattjlewis/pigpioj/blob/3e274d46892d58e4be38d454c031d50a4e31ef81/pigpioj-java/src/main/java/uk/pigpioj/PigpioJ.java#L9)
+is invoked.
 
-pigpioj comes bundled with native libraries that are compiled for AArch64, ARMv7 and ARMv7 CPU
-architectures which are bundled within the pigpioj JAR file itself. At startup, pigpioj will detect
-the CPU architecture and load the appropriate JNI library.
+pigpioj provides native libraries that are compiled for ARMv6, ARMv7 and AArch64 CPU architectures
+which are bundled within the pigpioj JAR file itself. At startup, pigpioj will detect the CPU
+architecture and dynamically load the appropriate JNI library. It will first look for libpigpioj.so
+on the Java library path, if not found it will extract the library from within the JAR file itself
+via a temporary file that is automatically deleted once loaded.
 
-The optimisations within pigpio (using /dev/mem) unfortunately requires root access.
+The optimisations within pigpio (using `/dev/mem`) unfortunately requires root access.
 Because of this all pigpioj applications that use the default JNI mode must be run as root.
 In addition, the pigpio shared library must be installed on the Raspberry Pi; it can be installed by
 running:
@@ -50,10 +53,10 @@ sudo systemctl disable pigpiod.service
 ### Running on Ubuntu
 
 At the time of writing, the Ubuntu 64-bit operating system for Raspberry Pi didn't include the
-pigpio packages, hence must be built from source code.
+pigpio packages, hence must be built and installed from source code.
 Clone the [pigpio GitHub repository](https://github.com/joan2937/pigpio), build and install it.
 
-```
+```shell
 sudo apt update && sudo apt -y install git make gcc
 git clone https://github.com/joan2937/pigpio.git --depth=1
 cd pigpio
@@ -63,7 +66,7 @@ sudo make install
 
 ### PWM / PCM / I2S / pigpio Conflicts
 
-As per [this pigpio issue](https://github.com/joan2937/pigpio/issues/87), by default pigpio uses the
+As per this [pigpio issue](https://github.com/joan2937/pigpio/issues/87), by default pigpio uses the
 Pi's PCM hardware to time DMA transfers. pigpio can be configured to use the PWM hardware instead of
 the PCM hardware by calling `gpioCfgClock` before `gpioInitialise`. To enable this in pigpioj, the
 following variables must be set, either via command line or as environment variables:
@@ -80,7 +83,7 @@ or via the pigpioj Docker based cross compiler.
 
 Clone pigpioj, build the Docker image and initiate the docker build process:
 
-```
+```shell
 git clone git@github.com:mattjlewis/pigpioj.git
 cd pigpioj/pigpioj-native/docker
 docker build -t diozero/pigpioj-cc .
@@ -112,7 +115,7 @@ Unfortunately `pigpio.h` is not included in any of the Raspberry Pi OS packages,
 this command in the Pi user's home directory (the Makefile assumes the header files are in
 `/home/pi/pigpio`):
 
-```
+```shell
 sudo apt update && sudo apt -y install git make gcc
 git clone https://github.com/joan2937/pigpio.git --depth=1
 cd pigpio
@@ -121,14 +124,14 @@ make
 
 Copy the pigpioj-native source files to the Raspberry Pi and compile with `make`.
 
-```
+```shell
 git clone git@github.com:mattjlewis/pigpioj.git
 cd pigpioj/pigpioj-native/src/main/native
 make
 ```
 
 This will produce a libpigpioj.so shared object library that needs to be made available on the
-classpath at runtime.
+Java library path at runtime.
 
 ## Sockets
 
@@ -156,7 +159,8 @@ sudo systemctl enable pigpiod.service
 sudo systemctl start pigpiod.service
 ```
 
-Note that you can also change the default pigpiod port if need be via the `PIGPIOD_PORT` property.
+If pigpiod is configured to listen on a non-default port (the default is 8888) you will need to
+set the `PIGPIOD_PORT` property.
 
 One key benefit of sockets mode is to enable remote communication - this means that you can use the
 exact same APIs to run applications on another machine, including a any laptop or desktop that can
@@ -199,5 +203,5 @@ public class PigpioTest {
 }
 ```
 
-This library is used as a provider for the Raspberry Pi by the platform agnostic
-diozero Java library [diozero](http://www.diozero.com).
+This library is used as a provider for the Raspberry Pi by the platform agnostic diozero Java
+library [diozero](http://www.diozero.com).
