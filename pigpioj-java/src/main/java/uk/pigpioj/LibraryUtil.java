@@ -5,9 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LibraryUtil {
-	private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
+	static final Logger LOGGER = Logger.getLogger(LibraryUtil.class.getName());
+
+	private static final String OS_NAME = System.getProperty("os.name").replace(" ", "").toLowerCase();
 	private static String OS_ARCH = System.getProperty("os.arch").toLowerCase();
 	private static final String LINUX_CPUINFO_FILE = "/proc/cpuinfo";
 	private static final String ARMV6_CPU_MODEL_NAME = "armv6";
@@ -16,9 +20,9 @@ public class LibraryUtil {
 	public static String getCpuArch() {
 		String cpu_arch = OS_ARCH;
 
-		try {
-			Path path = Paths.get(LINUX_CPUINFO_FILE);
-			if (path.toFile().exists() && path.toFile().canRead()) {
+		Path path = Paths.get(LINUX_CPUINFO_FILE);
+		if (path.toFile().exists() && path.toFile().canRead()) {
+			try {
 				// Determine if this is ARMv6 or ARMv7
 				cpu_arch = Files.lines(path).filter(line -> line.startsWith("model name"))
 						.map(line -> line.split(":")[1].trim().split("[- ]")[0].trim().toLowerCase())
@@ -29,9 +33,10 @@ public class LibraryUtil {
 				if (cpu_arch.equals("arm")) {
 					cpu_arch = ARMV6_CPU_MODEL_NAME;
 				}
+			} catch (Throwable t) {
+				// Ignore
+				LOGGER.log(Level.FINE, "Error processing {} file: {}", new Object[] { LINUX_CPUINFO_FILE, t });
 			}
-		} catch (Throwable t) {
-			// Ignore
 		}
 
 		return cpu_arch;
@@ -61,12 +66,14 @@ public class LibraryUtil {
 			// Ignore
 		}
 
-		// If not found, load the library that is appropriate for this CPU architecture
+		// If not found, load the appropriate library for this CPU architecture
 		if (!loaded) {
 			String lib_ext = getLibExt();
 			String lib_resource_name = String.format("/lib/%s-%s/lib%s.%s", OS_NAME, getCpuArch(), libName, lib_ext);
 			try (InputStream is = clz.getResourceAsStream(lib_resource_name)) {
-				if (is != null) {
+				if (is == null) {
+					LOGGER.log(Level.SEVERE, "Error: unable to find '" + lib_resource_name + "' in the JAR file");
+				} else {
 					Path path = Files.createTempFile("lib" + libName, lib_ext);
 					path.toFile().deleteOnExit();
 					Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
@@ -75,7 +82,7 @@ public class LibraryUtil {
 					path.toFile().delete();
 				}
 			} catch (Throwable t) {
-				System.err.println("Error loading library from classpath '" + lib_resource_name + "': " + t);
+				LOGGER.log(Level.SEVERE, "Error loading library from classpath '" + lib_resource_name + "': " + t);
 			}
 		}
 
