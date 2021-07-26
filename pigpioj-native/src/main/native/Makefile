@@ -50,7 +50,7 @@ endif
 
 override CFLAGS := -O3 -Wall -pthread -fPIC $(CFLAGS)
 
-INCLUDES   := -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/$(OS_JAVA_INC) -I$(HOME)/pigpio
+INCLUDES   := -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/$(OS_JAVA_INC)
 LIB_PREFIX ?= lib
 LIB_TARGET := $(LIB_PREFIX)$(LIB_NAME).$(LIB_EXT)
 OBJS       := $(SRCS:.c=.o)
