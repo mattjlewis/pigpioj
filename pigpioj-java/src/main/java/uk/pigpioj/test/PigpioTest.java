@@ -7,7 +7,7 @@ import uk.pigpioj.PigpioJ;
 public class PigpioTest {
 	public static void main(String[] args) throws InterruptedException {
 		int gpio = 16;
-		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+		try (PigpioInterface pigpio_impl = PigpioJ.autoDetectedImplementation()) {
 			pigpio_impl.setMode(gpio, PigpioConstants.MODE_PI_OUTPUT);
 			pigpio_impl.write(gpio, true);
 			Thread.sleep(1000);

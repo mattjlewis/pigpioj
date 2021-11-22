@@ -26,7 +26,6 @@ package uk.pigpioj.test;
  * #L%
  */
 
-
 import java.io.IOException;
 
 import uk.pigpioj.PigpioCallback;
@@ -38,14 +37,14 @@ public class PigpioInputTest implements PigpioCallback {
 	public static void main(String[] args) {
 		int pin = 12;
 		int delay_s = 20;
-		
-		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+
+		try (PigpioInterface pigpio_impl = PigpioJ.autoDetectedImplementation()) {
 			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {
 				throw new IOException("Error in pigpio_impl.initialise()");
 			}
-			
+
 			int rc = pigpio_impl.setMode(pin, PigpioConstants.MODE_PI_INPUT);
 			if (rc < 0) {
 				throw new IOException("Error in pigpio_impl.setMode()");
@@ -59,8 +58,8 @@ public class PigpioInputTest implements PigpioCallback {
 				throw new IOException("Error in pigpio_impl.setISRFunc()");
 			}
 			System.out.println("Sleeping for " + delay_s + "s");
-			Thread.sleep(delay_s*1000);
-			
+			Thread.sleep(delay_s * 1000);
+
 			rc = pigpio_impl.disableListener(pin);
 			if (rc < 0) {
 				throw new IOException("Error in pigpio_impl.setISRFunc()");

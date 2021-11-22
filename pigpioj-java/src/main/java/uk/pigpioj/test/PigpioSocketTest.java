@@ -2,7 +2,8 @@ package uk.pigpioj.test;
 
 import uk.pigpioj.PigpioCallback;
 import uk.pigpioj.PigpioConstants;
-import uk.pigpioj.PigpioSocket;
+import uk.pigpioj.PigpioInterface;
+import uk.pigpioj.PigpioJ;
 
 public class PigpioSocketTest implements PigpioCallback {
 	public static void main(String[] args) {
@@ -18,8 +19,7 @@ public class PigpioSocketTest implements PigpioCallback {
 	}
 
 	public void run(String hostname, int port) {
-		try (PigpioSocket pigpiod = new PigpioSocket()) {
-			pigpiod.connect(hostname, port);
+		try (PigpioInterface pigpiod = PigpioJ.newSocketImplementation(hostname, port)) {
 
 			int delay = 500;
 			int small_delay = 20;

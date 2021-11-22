@@ -44,7 +44,7 @@ public class PigpioPerfTest {
 		final int pin = Integer.parseInt(args[0]);
 		final int iterations = args.length > 1 ? Integer.parseInt(args[1]) : DEFAULT_ITERATIONS;
 
-		try (PigpioInterface pigpio_impl = PigpioJ.getImplementation()) {
+		try (PigpioInterface pigpio_impl = PigpioJ.autoDetectedImplementation()) {
 			int version = pigpio_impl.getVersion();
 			System.out.println("version: " + version);
 			if (version < 0) {

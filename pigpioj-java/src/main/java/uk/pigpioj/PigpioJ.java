@@ -4,29 +4,36 @@ public class PigpioJ {
 	private static final String PIGPIOD_HOST = "PIGPIOD_HOST";
 	private static final String PIGPIOD_PORT = "PIGPIOD_PORT";
 
-	private static PigpioInterface pigpioImpl;
+	private static PigpioInterface autoDetectedPigpioImpl;
 
-	public synchronized static PigpioInterface getImplementation() {
-		if (pigpioImpl == null) {
+	public synchronized static PigpioInterface autoDetectedImplementation() {
+		if (autoDetectedPigpioImpl == null) {
 			String pigpiod_hostname = getProperty(PIGPIOD_HOST);
 
 			if (pigpiod_hostname != null) {
-				PigpioSocket pigpiod = new PigpioSocket();
-
 				String pigpiod_port_str = getProperty(PIGPIOD_PORT);
 				int pigpiod_port = PigpioSocket.DEFAULT_PORT;
 				if (pigpiod_port_str != null) {
 					pigpiod_port = Integer.parseInt(pigpiod_port_str);
 				}
 
-				pigpiod.connect(pigpiod_hostname, pigpiod_port);
-				pigpioImpl = pigpiod;
+				autoDetectedPigpioImpl = newSocketImplementation(pigpiod_hostname, pigpiod_port);
 			} else {
-				pigpioImpl = new PigpioJNI();
+				autoDetectedPigpioImpl = new PigpioJNI();
 			}
 		}
 
-		return pigpioImpl;
+		return autoDetectedPigpioImpl;
+	}
+
+	public static PigpioInterface newSocketImplementation(String hostname) {
+		return newSocketImplementation(hostname, PigpioSocket.DEFAULT_PORT);
+	}
+
+	public static PigpioInterface newSocketImplementation(String hostname, int port) {
+		PigpioSocket pigpiod = new PigpioSocket();
+		pigpiod.connect(hostname, port);
+		return pigpiod;
 	}
 
 	static String getProperty(String property) {
