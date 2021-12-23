@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -391,15 +392,15 @@ public class PigpioSocket implements PigpioInterface {
 	} pigifError_t;
 	*/
 
-	private BlockingQueue<ResponseMessage> messageQueue;
+	private final int timeoutMs;
+	private final BlockingQueue<ResponseMessage> messageQueue;
+	private final Map<Integer, PigpioCallback> callbacks;
+	private final AtomicInteger notificationHandle = new AtomicInteger(NOTIFICATION_HANDLE_NOT_SET);
 	private EventLoopGroup workerGroup;
 	private Channel messageChannel;
 	private Channel notificationChannel;
 	private ChannelFuture lastWriteFuture;
-	private int timeoutMs;
 	private int monitorMask;
-	private int notificationHandle = NOTIFICATION_HANDLE_NOT_SET;
-	private Map<Integer, PigpioCallback> callbacks;
 	private int lastGpioLevelMask;
 
 	public PigpioSocket() {
@@ -428,7 +429,7 @@ public class PigpioSocket implements PigpioInterface {
 			b1.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(me, new ResponseDecoder(), rh);
+					ch.pipeline().addLast(new ResponseDecoder(), me, rh);
 				}
 			}).option(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
@@ -440,7 +441,7 @@ public class PigpioSocket implements PigpioInterface {
 			b2.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(me, new NotificationDecoder(), nh);
+					ch.pipeline().addLast(new NotificationDecoder(), me, rh, nh);
 				}
 			}).option(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
 
@@ -496,10 +497,10 @@ public class PigpioSocket implements PigpioInterface {
 	void messageReceived(ResponseMessage msg) {
 		LOGGER.finer("messageReceived(" + msg + ")");
 
-		// A hack as the notification handle is sent via the notification
-		// channel which has a different message structure
+		// A hack as notifications are sent via the notification channel which has a
+		// different message structure
 		if (msg.cmd == PI_CMD_NOIB) {
-			notificationHandle = (int) msg.res;
+			notificationHandle.set((int) msg.res);
 			return;
 		}
 
@@ -569,7 +570,7 @@ public class PigpioSocket implements PigpioInterface {
 
 	@Override
 	public int enableListener(int gpio, int edge, PigpioCallback callback) {
-		if (notificationHandle == NOTIFICATION_HANDLE_NOT_SET) {
+		if (notificationHandle.get() == NOTIFICATION_HANDLE_NOT_SET) {
 			LOGGER.warning("Error, notification handle not set");
 		}
 
@@ -578,7 +579,7 @@ public class PigpioSocket implements PigpioInterface {
 			LOGGER.warning("GPIO " + gpio + " is already being monitored");
 			return PigpioConstants.SUCCESS;
 		}
-		if (sendMessage(new Message(PI_CMD_NB, notificationHandle, monitorMask | monitor_bit)) == null) {
+		if (sendMessage(new Message(PI_CMD_NB, notificationHandle.get(), monitorMask | monitor_bit)) == null) {
 			return PigpioConstants.ERROR;
 		}
 		monitorMask |= monitor_bit;
@@ -589,7 +590,7 @@ public class PigpioSocket implements PigpioInterface {
 
 	@Override
 	public int disableListener(int gpio) {
-		if (notificationHandle == NOTIFICATION_HANDLE_NOT_SET) {
+		if (notificationHandle.get() == NOTIFICATION_HANDLE_NOT_SET) {
 			LOGGER.warning("Error, notification handle not set");
 		}
 
@@ -598,7 +599,7 @@ public class PigpioSocket implements PigpioInterface {
 			LOGGER.warning("GPIO " + gpio + " isn't being monitored");
 			return PigpioConstants.SUCCESS;
 		}
-		if (sendMessage(new Message(PI_CMD_NB, notificationHandle, monitorMask & ~monitor_bit)) == null) {
+		if (sendMessage(new Message(PI_CMD_NB, notificationHandle.get(), monitorMask & ~monitor_bit)) == null) {
 			return PigpioConstants.ERROR;
 		}
 		monitorMask &= ~monitor_bit;
@@ -1844,6 +1845,7 @@ public class PigpioSocket implements PigpioInterface {
 		}
 	}
 
+	@Sharable
 	static class ResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
 		private MessageListener<ResponseMessage> listener;
 
