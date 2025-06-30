@@ -124,7 +124,7 @@ public class PigpioJNI implements PigpioInterface {
 
 	@Override
 	public int setPWMRange(int gpio, int range) {
-		return PigpioGpio.setPWMDutyCycle(gpio, range);
+		return PigpioGpio.setPWMRange(gpio, range);
 	}
 
 	@Override
